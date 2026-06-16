@@ -19,4 +19,9 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
+    ignores: ['dist/**'],
+    extends: ['prettier'],
+  },
 ])
