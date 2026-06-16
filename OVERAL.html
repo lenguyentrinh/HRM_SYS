@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRM System - Project Overview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; padding: 2rem; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 2rem; color: #1a1a2e; margin-bottom: 0.5rem; }
+    .subtitle { color: #666; font-size: 1.1rem; margin-bottom: 2rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 1rem; }
+    h2 { font-size: 1.4rem; color: #16213e; margin: 2rem 0 0.5rem; padding-left: 0.75rem; border-left: 4px solid #0f3460; }
+    h3 { font-size: 1.1rem; color: #0f3460; margin: 1rem 0 0.5rem; }
+    .phase { background: #fff; border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #0f3460; }
+    .phase.P1 { border-left-color: #e94560; }
+    .phase.P2 { border-left-color: #f5a623; }
+    .phase.P3 { border-left-color: #2ecc71; }
+    .phase.P4 { border-left-color: #9b59b6; }
+    .epic { font-weight: 600; color: #1a1a2e; font-size: 1.05rem; }
+    .epic-key { color: #0065ff; font-size: 0.85rem; font-weight: 500; margin-left: 0.5rem; }
+    .features { margin: 0.75rem 0 0 1rem; }
+    .feature { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.3rem 0; }
+    .feature-key { color: #0065ff; font-size: 0.8rem; font-weight: 600; min-width: 5.5rem; }
+    .feature-name { color: #444; }
+    .subtasks { margin: 0.25rem 0 0 1.5rem; font-size: 0.9rem; color: #666; display: none; }
+    .subtasks.show { display: block; }
+    .subtask { padding: 0.15rem 0; }
+    .subtask-key { color: #2684ff; font-size: 0.78rem; }
+    .toggle-btn { background: none; border: 1px solid #ddd; border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer; color: #666; margin-left: 0.5rem; }
+    .toggle-btn:hover { background: #f0f0f0; }
+    .status { font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px; font-weight: 500; }
+    .status.todo { background: #eaecf0; color: #44546f; }
+    .status.done { background: #e3fcef; color: #006644; }
+    .meta { font-size: 0.85rem; color: #888; margin-top: 2rem; border-top: 1px solid #e0e0e0; padding-top: 1rem; }
+    .jira-link { color: #0065ff; text-decoration: none; }
+    .jira-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>HRM System — Project Overview</h1>
+  <p class="subtitle">Human Resource Management System with QR attendance tracking, leave management, and payroll calculation</p>
+
+  <p style="margin-bottom:1.5rem;color:#555;">
+    <strong>Jira Project:</strong> <a class="jira-link" href="https://vibe-code.atlassian.net/jira/software/c/projects/HRMSYS" target="_blank">HRMSYS (vibe-code.atlassian.net)</a> &nbsp;|&nbsp;
+    <strong>Frontend:</strong> Vite + React 19 + TypeScript + Tailwind CSS + shadcn/ui &nbsp;|&nbsp;
+    <strong>Backend:</strong> Supabase (PostgreSQL + Edge Functions) &nbsp;|&nbsp;
+    <strong>Auth:</strong> Custom phone + SHA-256 &nbsp;|&nbsp;
+    <strong>4 Epics</strong> · <strong>30 Features</strong> · <strong>134 Subtasks</strong>
+  </p>
+
+  <!-- PHASE 1 -->
+  <div class="phase P1">
+    <div class="epic">Phase 1: Foundation <span class="epic-key">HRMSYS-5</span></div>
+    <p style="color:#666;font-size:0.9rem;margin-top:0.25rem;">Supabase + Auth + Layouts + CRUD</p>
+    <div class="features">
+      <div class="feature"><span class="feature-key">HRMSYS-9</span><span class="feature-name">Project Setup (Vite + React + Tailwind + shadcn/ui + TanStack Query + Zustand + Router)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-10</span><span class="feature-name">Supabase Setup (migrations, RLS, pg_cron)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-11</span><span class="feature-name">Custom Auth System (phone + SHA-256, login, Zustand persist)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-12</span><span class="feature-name">Portal Layouts (Admin sidebar/topbar, Employee bottom nav, routing, guards)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-13</span><span class="feature-name">Employee CRUD (list, form, bulk import/export Excel, detail page)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-14</span><span class="feature-name">Shift CRUD (list, form, grace period, overnight flag)</span></div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase P2">
+    <div class="epic">Phase 2: Core Attendance <span class="epic-key">HRMSYS-6</span></div>
+    <p style="color:#666;font-size:0.9rem;margin-top:0.25rem;">QR Check-in + Roster + Attendance Management</p>
+    <div class="features">
+      <div class="feature"><span class="feature-key">HRMSYS-15</span><span class="feature-name">Roster Scheduling (calendar grid, monthly assignment, copy, override)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-16</span><span class="feature-name">QR Token Generation (Edge Function generate-qr, pg_cron, UUID, VN timezone)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-17</span><span class="feature-name">Tablet QR Display (/tablet/:branch_id, realtime clock, multi-shift selector)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-18</span><span class="feature-name">Mobile QR Scanner (CheckinPage, BarcodeDetector, jsQR, file fallback)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-19</span><span class="feature-name">Check-in Edge Function (token validation, shift verification, late calc)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-20</span><span class="feature-name">Attendance Management (auto-status, manual entry, audit log, Excel export)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-21</span><span class="feature-name">Shift Change Requests (submit 1-day/full-week, approve/reject, realtime)</span></div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase P3">
+    <div class="epic">Phase 3: Leave & Payroll <span class="epic-key">HRMSYS-7</span></div>
+    <p style="color:#666;font-size:0.9rem;margin-top:0.25rem;">Leaves + Payroll + Notifications + Dashboard</p>
+    <div class="features">
+      <div class="feature"><span class="feature-key">HRMSYS-22</span><span class="feature-name">Leave Management (policy config, submit, balance, approve/reject, auto-sync)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-23</span><span class="feature-name">Payroll Settings (OT multipliers, allowances, BHXH, penalties, bonuses, holidays)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-24</span><span class="feature-name">Payroll Calculation (Edge Function, Gross-to-Net, draft/confirm/lock)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-25</span><span class="feature-name">Salary Preview (Edge Function, Employee Dashboard card, breakdown)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-26</span><span class="feature-name">Payroll Admin UI (table, detail breakdown, manual override, confirm, Excel export)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-27</span><span class="feature-name">Notification System (Supabase Realtime, bell icon, unread badge, dropdown)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-28</span><span class="feature-name">Admin Dashboard (stat cards, 7-day chart, ranking, classification, payroll charts)</span></div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase P4">
+    <div class="epic">Phase 4: Refactor & Polish <span class="epic-key">HRMSYS-8</span></div>
+    <p style="color:#666;font-size:0.9rem;margin-top:0.25rem;">Code Refactor + Bug Fixes + E2E Tests + Performance</p>
+    <div class="features">
+      <div class="feature"><span class="feature-key">HRMSYS-29</span><span class="feature-name">Code Refactor (feature-based folders, shared components, naming conventions)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-30</span><span class="feature-name">Timezone Bug Fixes (VN UTC+7 in generate-qr, expires_at, check-in parsing)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-31</span><span class="feature-name">QR Token Fixes (expiry calc, pg_cron alignment, regeneration fallback)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-32</span><span class="feature-name">Vercel SPA Rewrites (vercel.json, no 404 on direct routes)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-33</span><span class="feature-name">iOS Camera Fixes (jsQR fallback, file input, permission handling)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-34</span><span class="feature-name">Error Handling (FunctionsHttpError, user-friendly messages, timeout/offline)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-35</span><span class="feature-name">Playwright E2E Tests (auth, QR, check-in, leave, payroll, edge cases)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-36</span><span class="feature-name">Multi-Shift Tablet Page (load all active shifts, auto-select, manual select)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-37</span><span class="feature-name">Audit Log System (table, logging, super_admin viewer)</span></div>
+      <div class="feature"><span class="feature-key">HRMSYS-38</span><span class="feature-name">Performance & UI Polish (code splitting, skeletons, empty states, responsive, a11y)</span></div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <p>Generated: June 2026 &nbsp;|&nbsp; Total: 4 Epics · 30 Features · 134 Subtasks · 168 Issues</p>
+    <p>Jira Board: <a class="jira-link" href="https://vibe-code.atlassian.net/jira/software/c/projects/HRMSYS" target="_blank">https://vibe-code.atlassian.net/jira/software/c/projects/HRMSYS</a></p>
+  </div>
+</div>
+</body>
+</html>
