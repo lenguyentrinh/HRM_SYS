@@ -2,7 +2,7 @@
 
 ## Client Setup
 ```ts
-// src/lib/supabase.ts — singleton, import ở mọi nơi
+// src/lib/supabase.ts — singleton, import everywhere
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 
@@ -14,28 +14,28 @@ export const supabase = createClient<Database>(
 
 ## Query Patterns
 
-### Luôn handle error
+### Always handle error
 ```ts
-// ✅ Đúng
+// ✅ Correct
 const { data, error } = await supabase.from('employees').select('*')
 if (error) throw new Error(error.message)
 
-// ❌ Sai — bỏ qua error
+// ❌ Wrong — skipping error
 const { data } = await supabase.from('employees').select('*')
 ```
 
-### Dùng TanStack Query cho data fetching
+### Use TanStack Query for data fetching
 ```ts
-// ✅ Dùng useQuery thay vì useEffect + useState
+// ✅ Use useQuery instead of useEffect + useState
 const { data: employees, isLoading } = useQuery({
   queryKey: ['employees', branchId],
   queryFn: () => fetchEmployees(branchId)
 })
 ```
 
-### Type-safe queries với generated types
+### Type-safe queries with generated types
 ```ts
-// Sau khi chạy: supabase gen types typescript --project-id <id> > src/types/supabase.ts
+// After running: supabase gen types typescript --project-id <id> > src/types/supabase.ts
 type EmployeeRow = Database['public']['Tables']['employees']['Row']
 ```
 
@@ -48,9 +48,9 @@ const { data, count } = await supabase
   .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 ```
 
-### Filter với null check
+### Filter with null check
 ```ts
-// Chỉ apply filter nếu có giá trị
+// Only apply filter if value exists
 let query = supabase.from('attendance_records').select('*')
 if (statusFilter) query = query.eq('status', statusFilter)
 if (dateFilter) query = query.eq('date', dateFilter)
@@ -59,7 +59,7 @@ if (dateFilter) query = query.eq('date', dateFilter)
 ## Realtime Pattern
 
 ```ts
-// Subscribe trong useEffect, cleanup khi unmount
+// Subscribe in useEffect, cleanup on unmount
 useEffect(() => {
   const channel = supabase
     .channel(`notifications:${userId}`)
@@ -80,7 +80,7 @@ useEffect(() => {
 ## Edge Function Calls
 
 ```ts
-// Dùng supabase.functions.invoke thay vì fetch trực tiếp
+// Use supabase.functions.invoke instead of direct fetch
 const { data, error } = await supabase.functions.invoke('checkin', {
   body: { token, employee_id, type: 'check_in' }
 })
@@ -89,7 +89,7 @@ const { data, error } = await supabase.functions.invoke('checkin', {
 ## Auth Pattern
 
 ```ts
-// Hook để lấy user + role hiện tại
+// Hook to get current user + role
 export function useAuth() {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
@@ -108,9 +108,9 @@ export function useAuth() {
 
 ## Migration Conventions
 - File migration: `YYYYMMDDHHMMSS_description.sql`
-- Luôn có `up` migration, cân nhắc `down` migration cho production
-- Không sửa migration đã chạy — tạo migration mới
-- Enable RLS ngay trong migration khi tạo bảng:
+- Always have `up` migration, consider `down` migration for production
+- Do not modify a migration that has already been run — create a new migration
+- Enable RLS in the migration when creating the table:
   ```sql
   ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
   ```

@@ -1,15 +1,15 @@
-# Skill: Tạo trang mới
+# Skill: Create a new page
 
-## Dùng khi
-Cần tạo một page mới cho Admin portal hoặc Employee portal.
+## When to use
+When you need to create a new page for the Admin portal or Employee portal.
 
 ## Checklist
 
-1. **Tạo file page** tại đúng vị trí:
+1. **Create page file** at the correct location:
    - Admin: `src/pages/admin/<FeatureName>Page.tsx`
    - Employee: `src/pages/employee/<FeatureName>Page.tsx`
 
-2. **Cấu trúc file page:**
+2. **Page file structure:**
 ```tsx
 import { PageHeader } from '@/components/admin/PageHeader'
 // ... imports
@@ -22,20 +22,20 @@ export default function FeatureNamePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tên trang" description="Mô tả ngắn" />
+      <PageHeader title="Page Title" description="Short description" />
       {/* Content */}
     </div>
   )
 }
 ```
 
-3. **Đăng ký route** trong `src/App.tsx` hoặc router config
+3. **Register route** in `src/App.tsx` or router config
 
-4. **Thêm nav item** vào sidebar nếu cần (`src/components/admin/Sidebar.tsx`)
+4. **Add nav item** to sidebar if needed (`src/components/admin/Sidebar.tsx`)
 
-5. **Kiểm tra RLS** — đảm bảo user role phù hợp mới vào được trang
+5. **Check RLS** — ensure the correct user role can access the page
 
 ## Notes
-- Tham khảo DESIGN.md cho color và component patterns
-- Dùng TanStack Query cho data fetching, không dùng useEffect + fetch trực tiếp
-- Luôn có loading skeleton và empty state
+- Refer to DESIGN.md for color and component patterns
+- Use TanStack Query for data fetching, not useEffect + direct fetch
+- Always include loading skeleton and empty state

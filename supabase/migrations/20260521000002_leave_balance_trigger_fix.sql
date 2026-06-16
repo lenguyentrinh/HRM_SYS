@@ -1,4 +1,4 @@
--- Cập nhật trigger seed_leave_balance để đọc từ leave_policies thay vì hardcode 12 ngày
+-- Update seed_leave_balance trigger to read from leave_policies instead of hardcoding 12 days
 CREATE OR REPLACE FUNCTION public.seed_leave_balance()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -10,7 +10,7 @@ BEGIN
     AND lp.employee_type = NEW.type
   LIMIT 1;
 
-  -- Fallback về 12 nếu chưa cấu hình leave policy
+  -- Fallback to 12 if leave policy is not configured
   IF v_total_days IS NULL THEN
     v_total_days := 12;
   END IF;

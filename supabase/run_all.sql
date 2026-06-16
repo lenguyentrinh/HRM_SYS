@@ -1,8 +1,8 @@
-﻿-- =============================================================================
--- INITIAL SCHEMA â€“ HRM Management App (Custom Auth â€“ khÃ´ng dÃ¹ng Supabase Auth)
--- Cháº¡y toÃ n bá»™ file nÃ y trong Supabase SQL Editor
+-- =============================================================================
+-- INITIAL SCHEMA – HRM Management App (Custom Auth – does not use Supabase Auth)
+-- Run this entire file in Supabase SQL Editor
 --
--- Reset náº¿u cáº§n cháº¡y láº¡i tá»« Ä‘áº§u:
+-- Reset if you need to run from scratch:
 --   DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO anon, authenticated, service_role;
 -- =============================================================================
 
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.branches (
 );
 
 -- =============================================================================
--- TABLE: users  (custom auth â€“ khÃ´ng liÃªn káº¿t auth.users)
+-- TABLE: users  (custom auth – not linked to auth.users)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.users (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS public.employee_shift_assignments (
 );
 
 -- =============================================================================
--- TABLE: shift_schedules (ngÃ y cá»¥ thá»ƒ, Æ°u tiÃªn hÆ¡n assignment)
+-- TABLE: shift_schedules (specific date, takes priority over assignment)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.shift_schedules (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -335,7 +335,7 @@ CREATE INDEX IF NOT EXISTS idx_qr_tokens_token              ON public.qr_tokens(
 CREATE INDEX IF NOT EXISTS idx_shift_schedules_employee_date ON public.shift_schedules(employee_id, date);
 
 -- =============================================================================
--- RLS â€“ má»Ÿ hoÃ n toÃ n cho anon key (app ná»™i bá»™, auth tá»± quáº£n lÃ½ á»Ÿ táº§ng app)
+-- RLS – fully open for anon key (internal app, auth managed at app layer)
 -- =============================================================================
 ALTER TABLE public.branches                  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users                     ENABLE ROW LEVEL SECURITY;
@@ -354,7 +354,7 @@ ALTER TABLE public.payroll_records           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs                ENABLE ROW LEVEL SECURITY;
 
--- Cho phÃ©p anon key Ä‘á»c/ghi táº¥t cáº£ (authorization Ä‘Æ°á»£c xá»­ lÃ½ á»Ÿ táº§ng app)
+-- Allow anon key to read/write all (authorization handled at app layer)
 DO $$
 DECLARE
   t TEXT;
@@ -370,17 +370,17 @@ BEGIN
 END $$;
 
 -- =============================================================================
--- SEED: Táº¡o dá»¯ liá»‡u ban Ä‘áº§u
--- password_hash lÃ  SHA-256 cá»§a '123456'
--- Thay báº±ng hash tháº­t qua app hoáº·c tÃ­nh táº¡i: https://emn178.github.io/online-tools/sha256.html
+-- SEED: Create initial data
+-- password_hash is SHA-256 of '123456'
+-- Replace with real hash via app or compute at: https://emn178.github.io/online-tools/sha256.html
 -- =============================================================================
 
--- BÆ°á»›c 1: táº¡o branch
+-- Step 1: create branch
 INSERT INTO public.branches (id, name, address)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Chi nhÃ¡nh chÃ­nh', 'Äá»‹a chá»‰ cÃ´ng ty')
 ON CONFLICT DO NOTHING;
 
--- BÆ°á»›c 2: táº¡o super_admin
+-- Step 2: create super_admin
 -- password '123456' â†’ SHA-256: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
 INSERT INTO public.users (id, branch_id, phone, password_hash, role)
 VALUES (
@@ -392,7 +392,7 @@ VALUES (
 )
 ON CONFLICT DO NOTHING;
 
--- BÆ°á»›c 3: táº¡o leave policies máº·c Ä‘á»‹nh
+-- Step 3: create default leave policies
 INSERT INTO public.leave_policies (branch_id, employee_type, total_paid_days_per_year, carry_over_enabled, min_advance_notice_days)
 VALUES
   ('00000000-0000-0000-0000-000000000001', 'fulltime', 12, true, 1),
@@ -520,14 +520,14 @@ END $$;
 -- Migration: 20260521000001_employee_bonuses.sql
 -- ========================================
 
--- Khoáº£n thÆ°á»Ÿng/pháº¡t Ä‘áº·c biá»‡t ngoÃ i tÃ­nh toÃ¡n tá»± Ä‘á»™ng (per nhÃ¢n viÃªn, per thÃ¡ng)
+-- Special bonus/penalty outside automatic calculation (per employee, per month)
 CREATE TABLE IF NOT EXISTS public.employee_bonuses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   employee_id UUID NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
   branch_id UUID NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
   month INTEGER NOT NULL CHECK (month BETWEEN 1 AND 12),
   year INTEGER NOT NULL,
-  amount NUMERIC(12,0) NOT NULL, -- positive = thÆ°á»Ÿng, negative = pháº¡t
+  amount NUMERIC(12,0) NOT NULL, -- positive = bonus, negative = penalty
   reason TEXT NOT NULL,
   created_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -549,7 +549,7 @@ BEGIN
   END IF;
 END $$;
 
--- ThÃªm cá»™t special_bonus vÃ o payroll_records (tá»•ng employee_bonuses thÃ¡ng Ä‘Ã³)
+-- Add special_bonus column to payroll_records (sum of employee_bonuses for that month)
 ALTER TABLE public.payroll_records
   ADD COLUMN IF NOT EXISTS special_bonus NUMERIC(12,0) NOT NULL DEFAULT 0;
 
@@ -557,7 +557,7 @@ ALTER TABLE public.payroll_records
 -- Migration: 20260521000002_leave_balance_trigger_fix.sql
 -- ========================================
 
--- Cáº­p nháº­t trigger seed_leave_balance Ä‘á»ƒ Ä‘á»c tá»« leave_policies thay vÃ¬ hardcode 12 ngÃ y
+-- Update seed_leave_balance trigger to read from leave_policies instead of hardcoding 12 days
 CREATE OR REPLACE FUNCTION public.seed_leave_balance()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -569,7 +569,7 @@ BEGIN
     AND lp.employee_type = NEW.type
   LIMIT 1;
 
-  -- Fallback vá» 12 náº¿u chÆ°a cáº¥u hÃ¬nh leave policy
+  -- Fallback to 12 if leave policy is not configured
   IF v_total_days IS NULL THEN
     v_total_days := 12;
   END IF;

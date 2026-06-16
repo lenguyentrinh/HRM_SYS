@@ -1,46 +1,46 @@
 # HRM System – Claude Code Context
 
-Web app quản lý nhân sự nội bộ cho ~50 nhân viên: chấm công QR, tính lương, nghỉ phép.
-App nội bộ công ty — **không cần SEO, không cần SSR**. Mọi người dùng đều có tài khoản.
+Internal HR management web app for ~50 employees: QR attendance tracking, payroll calculation, leave management.
+Company internal app — **no SEO, no SSR needed**. All users have accounts.
 
 ---
 
-## Tổng quan hệ thống
+## System Overview
 
-**2 portal riêng biệt**, layout và route guard khác nhau:
+**2 separate portals**, different layouts and route guards:
 
-| Portal | Route prefix | Người dùng | Mục đích |
+| Portal | Route prefix | Users | Purpose |
 |---|---|---|---|
-| Admin Portal | `/admin/*` | `super_admin`, `manager` | Quản lý vận hành toàn bộ hệ thống |
-| Employee Portal | `/` | `employee` | Chấm công, xem lương, nộp đơn |
+| Admin Portal | `/admin/*` | `super_admin`, `manager` | Full system operations management |
+| Employee Portal | `/` | `employee` | Check-in, view salary, submit requests |
 
-**Sau đăng nhập**, hệ thống đọc `users.role` từ Supabase và redirect:
+**After login**, system reads `users.role` from Supabase and redirects:
 - `super_admin` / `manager` → `/admin/dashboard`
-- `employee` → `/` (dashboard cá nhân)
+- `employee` → `/` (personal dashboard)
 
 ---
 
 ## Commands
 
 ```bash
-npm run dev        # Dev server tại http://localhost:5173
+npm run dev        # Dev server at http://localhost:5173
 npm run build      # Build production (output: dist/)
-npm run preview    # Preview bản build production
-npm run typecheck  # Kiểm tra TypeScript (không emit)
+npm run preview    # Preview production build
+npm run typecheck  # TypeScript check (no emit)
 npm run lint       # ESLint check
 ```
 
 ---
 
-## Cấu trúc thư mục
+## Directory Structure
 
 ```
 src/
   components/
-    ui/                   # shadcn/ui components (không sửa trực tiếp)
+    ui/                   # shadcn/ui components (do not modify directly)
     admin/                # Layout, Sidebar, shared components Admin portal
     employee/             # Layout, BottomNav, shared components Employee portal
-    shared/               # Components dùng ở cả 2 portal (NotificationBell, Avatar...)
+    shared/               # Components used in both portals (NotificationBell, Avatar...)
   pages/
     admin/
       DashboardPage.tsx
@@ -49,19 +49,19 @@ src/
       AttendancePage.tsx
       LeavePage.tsx
       PayrollPage.tsx
-      SettingsPage.tsx    # Chỉ super_admin
+      SettingsPage.tsx    # super_admin only
       AnalyticsPage.tsx
     employee/
       HomePage.tsx        # Dashboard + salary preview
       CheckinPage.tsx     # QR scanner
       AttendanceHistoryPage.tsx
-      LeavePage.tsx       # Danh sách đơn + form tạo mới
-      SalaryPage.tsx      # Chi tiết lương
+      LeavePage.tsx       # Leave list + create form
+      SalaryPage.tsx      # Salary details
       ProfilePage.tsx
     auth/
       LoginPage.tsx
   hooks/
-    useAuth.ts            # User hiện tại + role
+    useAuth.ts            # Current user + role
     useAttendance.ts
     useLeave.ts
     usePayroll.ts
@@ -69,132 +69,132 @@ src/
   lib/
     supabase.ts           # Supabase client singleton
     utils.ts              # formatCurrency, formatDate, calcWorkingDays...
-    payroll.ts            # Công thức tính lương (dùng cả client preview)
+    payroll.ts            # Payroll formula (used for client preview)
   stores/
     authStore.ts          # Zustand: user, role, branch_id
     uiStore.ts            # Zustand: sidebar open, notification count
   types/
-    supabase.ts           # Auto-generated từ Supabase CLI
+    supabase.ts           # Auto-generated from Supabase CLI
     index.ts              # Custom types: EmployeeWithUser, AttendanceWithShift...
 supabase/
   functions/
-    checkin/              # Validate QR + ghi attendance
-    generate-qr/          # Sinh QR token (gọi bởi pg_cron)
-    calculate-payroll/    # Tính lương tháng
-    bulk-import/          # Import nhân viên từ Excel
-    salary-preview/       # Lương dự kiến realtime
-  migrations/             # SQL migration files (đặt tên: YYYYMMDDHHMMSS_desc.sql)
-docs/                     # Tài liệu dự án — đọc trước khi code
-  PLANNING.md             # Đặc tả tính năng đầy đủ + task checklist
+    checkin/              # Validate QR + record attendance
+    generate-qr/          # Generate QR token (called by pg_cron)
+    calculate-payroll/    # Calculate monthly payroll
+    bulk-import/          # Import employees from Excel
+    salary-preview/       # Real-time salary estimate
+  migrations/             # SQL migration files (name: YYYYMMDDHHMMSS_desc.sql)
+docs/                     # Project documentation — read before coding
+  PLANNING.md             # Full feature spec + task checklist
   DATABASE.md             # Schema, ERD, data flows
   API.md                  # Edge Functions + query patterns
   VALIDATIONS.md          # Business rules
   DESIGN.md               # Design system, components, UX patterns
-  handoff/                # Handoff files khi kết thúc mỗi phase
-rules/                    # Coding rules — đọc trước khi viết code
-skills/                   # Skill templates tái sử dụng
+  handoff/                # Handoff files at end of each phase
+rules/                    # Coding rules — read before writing code
+skills/                   # Reusable skill templates
 ```
 
 ---
 
 ## Tech Stack
 
-| Layer | Công nghệ | Lý do chọn |
+| Layer | Technology | Rationale |
 |---|---|---|
-| Frontend | React 18 + Vite | App nội bộ, không cần SSR. Vite nhanh hơn Next.js |
-| Language | TypeScript strict | Type safety toàn bộ, đặc biệt Supabase types |
-| Styling | Tailwind CSS + shadcn/ui | Utility-first, component library sẵn có |
+| Frontend | React 18 + Vite | Internal app, no SSR needed. Vite faster than Next.js |
+| Language | TypeScript strict | Full type safety, especially Supabase types |
+| Styling | Tailwind CSS + shadcn/ui | Utility-first, pre-built component library |
 | Server state | TanStack Query | Cache, refetch, optimistic updates |
-| UI state | Zustand | Nhẹ hơn Redux, đủ cho app này |
-| Database | Supabase PostgreSQL | Realtime, Auth, Edge Functions tích hợp sẵn |
-| Auth | Custom (SHA-256 + Zustand persist) | Không dùng Supabase Auth — tự quản lý users table |
-| Realtime | Supabase Realtime | Notifications không cần WebSocket server riêng |
-| Edge Logic | Supabase Edge Functions (Deno) | Logic server-side: tính lương, validate QR |
-| Cron | Supabase pg_cron | Auto-gen QR token 30' trước mỗi ca |
-| Deploy | Nginx / Cloudflare Pages | Static files, không cần Node server |
+| UI state | Zustand | Lighter than Redux, sufficient for this app |
+| Database | Supabase PostgreSQL | Built-in Realtime, Auth, Edge Functions |
+| Auth | Custom (SHA-256 + Zustand persist) | Not using Supabase Auth — self-managed users table |
+| Realtime | Supabase Realtime | Notifications without separate WebSocket server |
+| Edge Logic | Supabase Edge Functions (Deno) | Server-side logic: payroll, QR validation |
+| Cron | Supabase pg_cron | Auto-generate QR token 30 min before each shift |
+| Deploy | Nginx / Cloudflare Pages | Static files, no Node server needed |
 
 ---
 
-## Kiến trúc quan trọng — đọc kỹ trước khi code
+## Important Architecture — Read Before Coding
 
 ### Multi-branch
-Mọi bảng có `branch_id`. Hiện tại 1 chi nhánh nhưng thiết kế để mở rộng. Không hardcode branch logic.
+Every table has `branch_id`. Currently 1 branch but designed for expansion. Do not hardcode branch logic.
 
-### Lookup ca của nhân viên
-Khi cần biết ca của nhân viên X vào ngày Y:
-1. Kiểm tra `shift_schedules` (override cụ thể theo ngày) — ưu tiên cao hơn
-2. Nếu không có → fallback về `employee_shift_assignments` (ca tháng mặc định)
+### Employee Shift Lookup
+When determining which shift employee X works on date Y:
+1. Check `shift_schedules` (date-specific override) — higher priority
+2. If none → fallback to `employee_shift_assignments` (default monthly shift)
 
-### QR Token flow
-- `pg_cron` → gọi Edge Function `generate-qr` lúc 06:30 mỗi ngày
-- Mỗi ca có 1 token duy nhất per ngày (`UNIQUE shift_id + date`)
-- Token expire đúng giờ kết thúc ca
-- Tablet tại văn phòng hiển thị QR của ca hiện tại, tự refresh
+### QR Token Flow
+- `pg_cron` → calls Edge Function `generate-qr` at 06:30 daily
+- Each shift has 1 unique token per day (`UNIQUE shift_id + date`)
+- Token expires at shift end time
+- Office tablet displays current shift QR, auto-refreshes
 
 ### Salary Preview vs Payroll Record
-- **Salary preview** (Employee Portal): tính realtime không lưu DB, chỉ tính đến hôm nay
-- **Payroll record** (Admin Portal): tính cuối tháng, lưu DB với status `draft` → `confirmed`
-- Khi `confirmed`: lock, không tính lại được trừ khi super_admin unlock
+- **Salary preview** (Employee Portal): real-time calculation, no DB storage, computed up to today
+- **Payroll record** (Admin Portal): end-of-month calculation, stored in DB with status `draft` → `confirmed`
+- When `confirmed`: locked, cannot recalculate unless super_admin unlocks
 
-### Auth flow (Custom)
-- Không dùng `supabase.auth.*` — toàn bộ auth đi qua `src/lib/auth.ts`
-- Login: query `users` table bằng phone + SHA-256(password)
-- Session: lưu `{ id, role, branch_id, phone }` vào Zustand store, persist vào `localStorage` key `hrm-auth`
-- Route guard đọc từ store — không cần async call khi khởi động app
-- Tạo user mới: `createUserWithPhone()` trong `src/lib/auth.ts` (admin dùng khi thêm NV)
+### Auth Flow (Custom)
+- Do not use `supabase.auth.*` — all auth goes through `src/lib/auth.ts`
+- Login: query `users` table by phone + SHA-256(password)
+- Session: store `{ id, role, branch_id, phone }` in Zustand store, persist to `localStorage` key `hrm-auth`
+- Route guard reads from store — no async call needed on app startup
+- Create new user: `createUserWithPhone()` in `src/lib/auth.ts` (admin uses when adding employees)
 
 ### Notifications
-- Insert vào bảng `notifications` → Supabase Realtime trigger → client nhận ngay
-- Không polling, không cần WebSocket server riêng
-- Mỗi user subscribe 1 channel riêng theo `user_id`
+- Insert into `notifications` table → Supabase Realtime trigger → client receives instantly
+- No polling, no separate WebSocket server
+- Each user subscribes to their own channel by `user_id`
 
 ---
 
 ## Route Map
 
 ```
-/login                          # Đăng nhập (redirect nếu đã đăng nhập)
+/login                          # Login (redirect if already logged in)
 
-# Admin Portal (cần role: super_admin hoặc manager)
-/admin/dashboard                # Tổng quan hôm nay
-/admin/employees                # Danh sách nhân viên
-/admin/employees/:id            # Chi tiết nhân viên
-/admin/attendance               # Bảng chấm công
-/admin/leaves                   # Quản lý nghỉ phép
-/admin/shift-changes            # Yêu cầu đổi ca
-/admin/payroll                  # Bảng lương
-/admin/analytics                # Báo cáo thống kê
-/admin/settings                 # Cài đặt (super_admin only)
+# Admin Portal (requires role: super_admin or manager)
+/admin/dashboard                # Today's overview
+/admin/employees                # Employee list
+/admin/employees/:id            # Employee details
+/admin/attendance               # Attendance table
+/admin/leaves                   # Leave management
+/admin/shift-changes            # Shift change requests
+/admin/payroll                  # Payroll table
+/admin/analytics                # Statistics & reports
+/admin/settings                 # Settings (super_admin only)
 
-# Employee Portal (cần role: employee)
-/                               # Dashboard cá nhân + salary preview
+# Employee Portal (requires role: employee)
+/                               # Personal dashboard + salary preview
 /checkin                        # QR check-in scanner
-/attendance                     # Lịch sử chấm công cá nhân
-/leaves                         # Đơn nghỉ phép
-/salary                         # Xem lương
-/profile                        # Thông tin cá nhân
+/attendance                     # Personal attendance history
+/leaves                         # Leave requests
+/salary                         # View salary
+/profile                        # Personal info
 
-# Public (không cần đăng nhập)
-/tablet/:branch_id              # Trang hiển thị QR cho tablet tại văn phòng
+# Public (no login required)
+/tablet/:branch_id              # QR display page for office tablet
 ```
 
 ---
 
 ## Key Docs
 
-| File | Đọc khi nào |
+| File | When to Read |
 |---|---|
-| [docs/PLANNING.md](docs/PLANNING.md) | Hiểu tính năng cần build — đọc đầu tiên |
-| [docs/DATABASE.md](docs/DATABASE.md) | Trước khi viết query hoặc migration |
-| [docs/API.md](docs/API.md) | Trước khi gọi Edge Function hoặc Supabase |
-| [docs/VALIDATIONS.md](docs/VALIDATIONS.md) | Trước khi viết form submit hoặc Edge Function |
-| [docs/DESIGN.md](docs/DESIGN.md) | Trước khi viết component UI |
+| [docs/PLANNING.md](docs/PLANNING.md) | Understand features to build — read first |
+| [docs/DATABASE.md](docs/DATABASE.md) | Before writing queries or migrations |
+| [docs/API.md](docs/API.md) | Before calling Edge Functions or Supabase |
+| [docs/VALIDATIONS.md](docs/VALIDATIONS.md) | Before writing form submit or Edge Function |
+| [docs/DESIGN.md](docs/DESIGN.md) | Before writing UI components |
 
 ---
 
-## Rules — bắt buộc đọc trước khi code
+## Rules — Required Reading Before Coding
 
-| File | Nội dung |
+| File | Content |
 |---|---|
 | [rules/code-style.md](rules/code-style.md) | TypeScript, naming, imports, formatting |
 | [rules/security.md](rules/security.md) | RLS, keys, auth, input validation |
@@ -202,13 +202,13 @@ Khi cần biết ca của nhân viên X vào ngày Y:
 
 ---
 
-## Quy tắc Handoff — bắt buộc khi kết thúc Phase
+## Handoff Rules — Required at Phase Completion
 
-**Khi hoàn thành một phase, phải tạo file handoff trước khi chuyển sang phase tiếp theo.**
+**When a phase is completed, create a handoff file before moving to the next phase.**
 
-File handoff dùng để QC test và bàn giao — phải đủ chi tiết để người không tham gia development đọc và hiểu được.
+Handoff files are for QC testing and handover — must be detailed enough for someone not involved in development to read and understand.
 
-### Vị trí file
+### File Location
 ```
 docs/handoff/PHASE_1_HANDOFF.md
 docs/handoff/PHASE_2_HANDOFF.md
@@ -216,60 +216,60 @@ docs/handoff/PHASE_3_HANDOFF.md
 docs/handoff/PHASE_4_HANDOFF.md
 ```
 
-### File testing bổ sung (TESTING_PHASE_X.md)
-Nếu sau khi bàn giao phase có phát sinh bug và fix thêm, tạo file riêng:
+### Additional Testing File (TESTING_PHASE_X.md)
+If bugs are found during handoff QC testing, create a separate file:
 ```
-docs/handoff/TESTING_PHASE_3.md   ← bugs phát hiện khi QC test Phase 3
-docs/handoff/TESTING_PHASE_4.md   ← tương tự cho Phase 4
+docs/handoff/TESTING_PHASE_3.md   ← bugs found during Phase 3 QC
+docs/handoff/TESTING_PHASE_4.md   ← same for Phase 4
 ```
-File này ghi lại: bug description, root cause, fix, files changed — **không** gộp vào file HANDOFF chính để giữ handoff clean.
+This file records: bug description, root cause, fix, files changed — **do not** merge into the main HANDOFF file to keep it clean.
 
-### File fix log (FIX_BUGS_PHASE_X.md) — bắt buộc sau khi fix bugs từ TESTING file
-Sau khi fix tất cả bugs được log trong `TESTING_PHASE_X.md`, **bắt buộc** tạo file:
+### Fix Log File (FIX_BUGS_PHASE_X.md) — Required After Fixing Bugs from TESTING File
+After fixing all bugs logged in `TESTING_PHASE_X.md`, **must** create a file:
 ```
-docs/handoff/FIX_BUGS_PHASE_3_4.md   ← ví dụ đã tạo
-docs/handoff/FIX_BUGS_PHASE_5.md     ← tạo sau khi fix bugs từ TESTING_PHASE_5.md
+docs/handoff/FIX_BUGS_PHASE_3_4.md   ← example already created
+docs/handoff/FIX_BUGS_PHASE_5.md     ← create after fixing bugs from TESTING_PHASE_5.md
 ```
-File này ghi lại từng bug đã fix: mô tả, root cause, files sửa, cách test verify — để QC có thể retest.  
-**Rule:** Mỗi lần fix bugs từ một TESTING file → phải tạo FIX_BUGS file tương ứng trước khi báo hoàn thành.
+This file records each fixed bug: description, root cause, files changed, verification steps — so QC can retest.  
+**Rule:** Every time bugs are fixed from a TESTING file → must create a corresponding FIX_BUGS file before reporting completion.
 
-### Cấu trúc bắt buộc của file Handoff
+### Required Handoff File Structure
 
 ```markdown
-# Phase X Handoff – [Tên Phase]
+# Phase X Handoff – [Phase Name]
 
-## Tổng quan
-- Mục tiêu ban đầu của phase
-- Kết quả thực tế đạt được (% hoàn thành, deviation nếu có)
-- Ngày hoàn thành
+## Overview
+- Original phase objective
+- Actual results achieved (% complete, deviations if any)
+- Completion date
 
-## Tính năng đã hoàn thành
-### [Tên tính năng]
-- Mô tả hoạt động như thế nào (luồng từ đầu đến cuối)
-- Các edge case đã xử lý
-- File/component chính liên quan
-- Cách test thủ công
+## Completed Features
+### [Feature Name]
+- How it works (end-to-end flow)
+- Edge cases handled
+- Key files/components involved
+- Manual testing steps
 
-(lặp lại cho từng tính năng)
+(repeat for each feature)
 
-## Tính năng chưa hoàn chỉnh hoặc bị bỏ qua
-- Tên tính năng: lý do chưa làm, ảnh hưởng đến phase sau
+## Incomplete or Skipped Features
+- Feature name: reason not done, impact on next phase
 
 ## Known Issues & Technical Debt
-- [BUG/DEBT-XX] Mô tả vấn đề, tại sao chưa fix, mức độ ảnh hưởng
+- [BUG/DEBT-XX] Issue description, why not fixed, impact level
 
-## Checklist QC Test
-- [ ] Test case 1: mô tả bước test + kết quả mong đợi
+## QC Test Checklist
+- [ ] Test case 1: test steps + expected result
 - [ ] Test case 2: ...
-(tối thiểu 1 test case cho mỗi tính năng đã hoàn thành)
+(minimum 1 test case per completed feature)
 
-## Ghi chú cho Phase tiếp theo
-- Những dependency phase sau phải biết
-- Những quyết định kỹ thuật phase sau cần tôn trọng
-- Những vấn đề tồn đọng cần fix ngay đầu phase sau
+## Notes for Next Phase
+- Dependencies the next phase must know about
+- Technical decisions the next phase must respect
+- Outstanding issues to fix at the start of next phase
 ```
 
-### Ví dụ tên issue trong Known Issues
-- `[BUG-01]` — lỗi logic cần fix
-- `[DEBT-01]` — technical debt chấp nhận được nhưng cần clean up
-- `[LIMIT-01]` — limitation có chủ ý (không phải bug, nhưng QC cần biết)
+### Example Issue Names in Known Issues
+- `[BUG-01]` — logic bug needing fix
+- `[DEBT-01]` — acceptable technical debt but needs cleanup
+- `[LIMIT-01]` — intentional limitation (not a bug, but QC needs to know)

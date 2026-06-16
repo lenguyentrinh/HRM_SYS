@@ -1,35 +1,35 @@
 # Security Rules
 
 ## Supabase Keys
-- `VITE_SUPABASE_ANON_KEY` — key duy nhất được dùng trong client code
-- **TUYỆT ĐỐI KHÔNG** dùng `service_role` key trong frontend
-- Edge Functions mới được dùng `service_role` key (server-side only)
-- Keys lưu trong `.env.local`, không commit vào git
+- `VITE_SUPABASE_ANON_KEY` — only key used in client code
+- **ABSOLUTELY NEVER** use `service_role` key in frontend
+- Only Edge Functions can use `service_role` key (server-side only)
+- Keys stored in `.env.local`, not committed to git
 
 ## Row Level Security (RLS)
-- **Bật RLS trên TẤT CẢ bảng** — không có ngoại lệ
-- Mọi truy vấn từ client đều đi qua RLS
-- Trước khi deploy migration mới: verify RLS policy đã đúng
-- Test RLS bằng cách login với role khác nhau và xác nhận data isolation
+- **Enable RLS on ALL tables** — no exceptions
+- All queries from client go through RLS
+- Before deploying a new migration: verify RLS policies are correct
+- Test RLS by logging in with different roles and confirming data isolation
 
 ## Authentication
-- Route guard: kiểm tra `auth.user` + `users.role` trước khi render admin pages
-- Token refresh tự động qua Supabase session
-- Logout phải gọi `supabase.auth.signOut()` để invalidate session server-side
-- Không lưu session token trong localStorage thủ công (Supabase tự quản lý)
+- Route guard: check `auth.user` + `users.role` before rendering admin pages
+- Token refresh automatically via Supabase session
+- Logout must call `supabase.auth.signOut()` to invalidate session server-side
+- Do not store session token in localStorage manually (Supabase manages itself)
 
 ## Input Validation
-- Validate ở client (UX) VÀ server/Edge Function (security) — không chỉ 1 bên
-- Sanitize mọi text input trước khi hiển thị (React tự escape, nhưng cẩn thận với `dangerouslySetInnerHTML`)
-- File upload (Excel import): kiểm tra MIME type và size trước khi parse
+- Validate on client (UX) AND server/Edge Function (security) — not just one side
+- Sanitize all text input before rendering (React auto-escapes, but be careful with `dangerouslySetInnerHTML`)
+- File upload (Excel import): check MIME type and size before parsing
 
 ## QR Token Security
-- Token là UUID v4 — không thể đoán
-- Expire sau giờ kết ca
-- Mỗi ca chỉ có 1 token active (upsert thay vì insert)
-- Không nhúng sensitive data vào token (chỉ là opaque ID)
+- Token is UUID v4 — unpredictable
+- Expires after shift end time
+- Each shift has only 1 active token (upsert instead of insert)
+- Do not embed sensitive data in token (it's an opaque ID)
 
 ## Edge Functions
-- Verify `Authorization` header trong mọi Edge Function (trừ public endpoints)
-- Validate và sanitize tất cả input parameters
-- Không log sensitive data (lương, SĐT)
+- Verify `Authorization` header in every Edge Function (except public endpoints)
+- Validate and sanitize all input parameters
+- Do not log sensitive data (salary, phone number)

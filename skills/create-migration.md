@@ -1,26 +1,26 @@
-# Skill: Tạo Database Migration
+# Skill: Create a Database Migration
 
-## Dùng khi
-Cần thêm bảng, cột, index, RLS policy, hoặc function mới vào database.
+## When to use
+When you need to add new tables, columns, indexes, RLS policies, or functions to the database.
 
-## Tạo file
+## Create file
 
 ```bash
 supabase migration new <description>
-# Tạo file: supabase/migrations/YYYYMMDDHHMMSS_description.sql
+# Creates: supabase/migrations/YYYYMMDDHHMMSS_description.sql
 ```
 
-## Template migration đầy đủ
+## Full migration template
 
 ```sql
 -- ============================================
--- Migration: <mô tả ngắn>
+-- Migration: <short description>
 -- ============================================
 
--- 1. Tạo enum types (nếu cần)
+-- 1. Create enum types (if needed)
 CREATE TYPE employee_type AS ENUM ('fulltime', 'parttime');
 
--- 2. Tạo bảng
+-- 2. Create table
 CREATE TABLE IF NOT EXISTS table_name (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   branch_id   uuid NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
@@ -43,11 +43,11 @@ CREATE TRIGGER trg_table_name_updated_at
   BEFORE UPDATE ON table_name
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- 5. Enable RLS (LUÔN BẬT)
+-- 5. Enable RLS (ALWAYS ENABLE)
 ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
 
 -- 6. RLS Policies
--- Super admin / manager: full access trong branch
+-- Super admin / manager: full access within branch
 CREATE POLICY "admin_full_access" ON table_name
   FOR ALL USING (
     EXISTS (
@@ -58,24 +58,24 @@ CREATE POLICY "admin_full_access" ON table_name
     )
   );
 
--- Employee: chỉ xem record của bản thân
+-- Employee: view own records only
 CREATE POLICY "employee_own_access" ON table_name
   FOR SELECT USING (
     employee_id = (SELECT id FROM employees WHERE user_id = auth.uid())
   );
 ```
 
-## Checklist trước khi chạy
-- [ ] Tên bảng và cột đúng theo DATABASE.md
-- [ ] Có `branch_id` nếu bảng cần multi-branch support
-- [ ] RLS đã bật
-- [ ] Policies đủ cho các role: super_admin, manager, employee
-- [ ] Index trên các cột thường query (foreign keys, status, date)
+## Pre-run checklist
+- [ ] Table and column names match DATABASE.md
+- [ ] Includes `branch_id` if table needs multi-branch support
+- [ ] RLS enabled
+- [ ] Policies cover all roles: super_admin, manager, employee
+- [ ] Index on frequently queried columns (foreign keys, status, date)
 
 ## Apply migration
 
 ```bash
-supabase db push   # Apply lên Supabase project
-# hoặc
-supabase db reset  # Reset local + apply tất cả migrations
+supabase db push   # Apply to Supabase project
+# or
+supabase db reset  # Reset local + apply all migrations
 ```

@@ -1,194 +1,194 @@
 # VALIDATIONS.md – Business Rules & Validation Logic
 
-## Nguyên tắc validate
+## Validation Principles
 
-**Validate 2 lớp** — client (UX nhanh) và server (security):
-- **Client-only:** Rules mà nếu bypass cũng không gây hại (VD: format input)
-- **Server-only:** Rules phức tạp cần query DB (VD: check phone unique)
-- **Cả hai:** Rules quan trọng không được bỏ qua (VD: ngày hợp lệ, số tiền > 0)
+**2-layer validation** — client (fast UX) and server (security):
+- **Client-only:** Rules that cause no harm if bypassed (e.g.: input formatting)
+- **Server-only:** Complex rules requiring DB queries (e.g.: phone uniqueness check)
+- **Both:** Critical rules that must never be skipped (e.g.: valid dates, amount > 0)
 
-**Không bao giờ chỉ validate ở client** với dữ liệu nhạy cảm (lương, chấm công, phê duyệt). Client code có thể bị bypass.
+**Never validate only on client** for sensitive data (salary, attendance, approvals). Client code can be bypassed.
 
-**Khi validate fail:**
-- Client: hiển thị inline error dưới field, không submit form
-- Edge Function: trả về HTTP 400 với `{ error: "error_code", message: "..." }`
-- DB constraint: Supabase trả về lỗi PostgreSQL — catch ở client và map ra message tiếng Việt
+**On validation failure:**
+- Client: show inline error below the field, do not submit form
+- Edge Function: return HTTP 400 with `{ error: "error_code", message: "..." }`
+- DB constraint: Supabase returns PostgreSQL error — catch on client and map to user-friendly message
 
-Tài liệu này định nghĩa tất cả quy tắc nghiệp vụ cần validate. Mỗi rule ghi rõ: nơi validate (client / Edge Function), thông báo lỗi trả về.
+This document defines all business rules requiring validation. Each rule specifies: validation location (client / Edge Function), error message returned.
 
 ---
 
-## Chấm công (Attendance)
+## Attendance
 
-### ATT-01: QR Token hợp lệ
-- **Rule:** Token phải tồn tại, `is_active = true`, và `expires_at > now()`
+### ATT-01: Valid QR Token
+- **Rule:** Token must exist, `is_active = true`, and `expires_at > now()`
 - **Validate:** Edge Function `checkin`
-- **Error:** `"Mã QR đã hết hạn hoặc không hợp lệ"`
+- **Error:** `"QR code has expired or is invalid"`
 
-### ATT-02: Nhân viên đúng ca
-- **Rule:** Nhân viên chỉ được check-in QR của ca mà họ được gán trong ngày đó (kiểm tra `shift_schedules` → fallback `employee_shift_assignments`)
+### ATT-02: Employee belongs to shift
+- **Rule:** Employee can only check-in with QR of the shift assigned to them on that day (check `shift_schedules` → fallback `employee_shift_assignments`)
 - **Validate:** Edge Function `checkin`
-- **Error:** `"Bạn không thuộc ca làm việc này"`
+- **Error:** `"You are not assigned to this shift"`
 
-### ATT-03: Không check-in 2 lần cùng ca
-- **Rule:** `attendance_records` đã có `check_in_at IS NOT NULL` cho cặp `(employee_id, date, shift_id)` thì không cho check-in lại
+### ATT-03: No duplicate check-in for same shift
+- **Rule:** `attendance_records` already has `check_in_at IS NOT NULL` for the `(employee_id, date, shift_id)` pair → block re-check-in
 - **Validate:** Edge Function `checkin`
-- **Error:** `"Bạn đã check-in ca này rồi"`
+- **Error:** `"You have already checked in for this shift"`
 
-### ATT-04: Check-out phải sau check-in
+### ATT-04: Check-out must be after check-in
 - **Rule:** `check_out_at > check_in_at`
 - **Validate:** Edge Function `checkin`
-- **Error:** `"Thời gian check-out không hợp lệ"`
+- **Error:** `"Check-out time is invalid"`
 
-### ATT-05: Tính đi trễ
-- **Rule:** `check_in_at > (shift.start_time + grace_period_minutes)` → `status = 'late'`, tính `late_minutes`
-- **Validate:** Edge Function `checkin` (tự động, không báo lỗi)
+### ATT-05: Late arrival calculation
+- **Rule:** `check_in_at > (shift.start_time + grace_period_minutes)` → `status = 'late'`, calculate `late_minutes`
+- **Validate:** Edge Function `checkin` (automatic, no error)
 
-### ATT-06: Tính về sớm
-- **Rule:** `check_out_at < (shift.end_time - early_leave_minutes)` → ghi nhận `early_leave_minutes`
-- **Validate:** Edge Function `checkin` (tự động)
+### ATT-06: Early leave calculation
+- **Rule:** `check_out_at < (shift.end_time - early_leave_minutes)` → record `early_leave_minutes`
+- **Validate:** Edge Function `checkin` (automatic)
 
-### ATT-07: Tính OT
-- **Rule:** `check_out_at > shift.end_time` → tính `overtime_minutes = check_out_at - shift.end_time`
-- **Validate:** Edge Function `checkin` (tự động)
+### ATT-07: Overtime calculation
+- **Rule:** `check_out_at > shift.end_time` → calculate `overtime_minutes = check_out_at - shift.end_time`
+- **Validate:** Edge Function `checkin` (automatic)
 
 ---
 
-## Nghỉ phép (Leave)
+## Leave
 
-### LEA-01: Thời gian hợp lệ
+### LEA-01: Valid date range
 - **Rule:** `end_date >= start_date`
 - **Validate:** Client + server
-- **Error:** `"Ngày kết thúc phải sau ngày bắt đầu"`
+- **Error:** `"End date must be after start date"`
 
-### LEA-02: Không xin nghỉ ngày quá khứ
+### LEA-02: Cannot request past dates
 - **Rule:** `start_date >= today`
 - **Validate:** Client + server
-- **Error:** `"Không thể xin nghỉ cho ngày đã qua"`
+- **Error:** `"Cannot request leave for past dates"`
 
-### LEA-03: Báo trước đủ số ngày
-- **Rule:** `start_date >= today + leave_policies.min_advance_notice_days` (tính ngày làm việc, không tính cuối tuần)
-- **Validate:** Server (trước khi insert)
-- **Error:** `"Phải xin nghỉ trước ít nhất {N} ngày làm việc"`
+### LEA-03: Sufficient advance notice
+- **Rule:** `start_date >= today + leave_policies.min_advance_notice_days` (count working days, excluding weekends)
+- **Validate:** Server (before insert)
+- **Error:** `"Must request leave at least {N} working days in advance"`
 - **Default:** min_advance_notice_days = 1
 
-### LEA-04: Không trùng đơn đang pending/approved
-- **Rule:** Không được có `leave_requests` khác của cùng nhân viên với `status IN ('pending', 'approved')` mà `date range` trùng nhau
+### LEA-04: No overlapping pending/approved requests
+- **Rule:** No other `leave_requests` for the same employee with `status IN ('pending', 'approved')` with overlapping `date range`
 - **Validate:** Server
-- **Error:** `"Bạn đã có đơn nghỉ phép trong khoảng thời gian này"`
+- **Error:** `"You already have a leave request for this period"`
 
-### LEA-05: Kiểm tra số ngày phép còn lại
-- **Rule:** Nếu `leave_type = 'paid'`, kiểm tra `leave_balances.total_paid_days - used_paid_days >= total_days`
+### LEA-05: Check remaining leave days
+- **Rule:** If `leave_type = 'paid'`, check `leave_balances.total_paid_days - used_paid_days >= total_days`
 - **Validate:** Client (warning) + server (confirm)
-- **Warning:** `"Bạn chỉ còn {N} ngày phép có lương. Số ngày vượt quá sẽ chuyển thành nghỉ không lương."`
+- **Warning:** `"You only have {N} paid leave days remaining. Excess days will be converted to unpaid leave."`
 
-### LEA-06: Đơn phép đã duyệt → sync attendance
-- **Rule:** Khi `status` chuyển từ `pending` → `approved`, tự động tạo/update `attendance_records` cho tất cả ngày trong range với `status = 'leave'` và `leave_request_id`
-- **Validate:** Database trigger hoặc Edge Function
+### LEA-06: Approved leave → sync attendance
+- **Rule:** When `status` changes from `pending` → `approved`, auto-create/update `attendance_records` for all days in range with `status = 'leave'` and `leave_request_id`
+- **Validate:** Database trigger or Edge Function
 
-### LEA-07: Hủy đơn đã duyệt
-- **Rule:** Chỉ admin mới được reject đơn đã approved. Khi reject, phải hoàn lại `leave_balances.used_paid_days`
+### LEA-07: Cancel approved request
+- **Rule:** Only admin can reject an approved request. When rejecting, must restore `leave_balances.used_paid_days`
 - **Validate:** Server
 
 ---
 
-## Đổi ca (Shift Change)
+## Shift Change
 
-### SHI-01: Không đổi ca trong quá khứ
+### SHI-01: Cannot change shift for past dates
 - **Rule:** `target_date >= today`
 - **Validate:** Client + server
-- **Error:** `"Không thể đổi ca cho ngày đã qua"`
+- **Error:** `"Cannot change shift for past dates"`
 
-### SHI-02: Phải đổi sang ca khác với ca hiện tại
-- **Rule:** `requested_shift_id != current_shift_id` của ngày đó
+### SHI-02: Must change to a different shift
+- **Rule:** `requested_shift_id != current_shift_id` for that date
 - **Validate:** Client
-- **Error:** `"Đây đã là ca làm việc của bạn"`
+- **Error:** `"This is already your assigned shift"`
 
-### SHI-03: Không có request trùng đang pending
-- **Rule:** Không tồn tại `shift_change_requests` khác `status = 'pending'` cùng `employee_id` và `target_date`
+### SHI-03: No duplicate pending request
+- **Rule:** No other `shift_change_requests` with `status = 'pending'` for the same `employee_id` and `target_date`
 - **Validate:** Server
-- **Error:** `"Bạn đã có yêu cầu đổi ca đang chờ duyệt cho ngày này"`
+- **Error:** `"You already have a pending shift change request for this date"`
 
-### SHI-04: Cập nhật sau khi duyệt
-- **Rule:** Khi approved → upsert `shift_schedules` với `shift_id` mới. Nếu đã có QR token của ngày đó → deactivate token cũ, sinh token mới cho ca mới
-- **Validate:** Server (trong flow approve)
+### SHI-04: Update after approval
+- **Rule:** When approved → upsert `shift_schedules` with the new `shift_id`. If QR token exists for that date → deactivate old token, generate new token for the new shift
+- **Validate:** Server (in approve flow)
 
 ---
 
-## Tính lương (Payroll)
+## Payroll
 
-### PAY-01: Chỉ tính lương khi có đủ dữ liệu chấm công
-- **Rule:** Cảnh báo nếu tháng có ngày làm việc mà `attendance_records` chưa có record (NV có thể đã vắng chưa được ghi nhận)
-- **Validate:** Edge Function `calculate-payroll` (warning, không block)
+### PAY-01: Only calculate when attendance data is complete
+- **Rule:** Warn if the month has working days without `attendance_records` (employee may have unrecorded absences)
+- **Validate:** Edge Function `calculate-payroll` (warning, not blocking)
 
-### PAY-02: Không overwrite bảng lương đã confirmed
-- **Rule:** Nếu `payroll_records.status = 'confirmed'` → không cho tính lại tự động. Admin phải unlock trước
+### PAY-02: Cannot overwrite confirmed payroll
+- **Rule:** If `payroll_records.status = 'confirmed'` → block auto-recalculation. Admin must unlock first
 - **Validate:** Edge Function
-- **Error:** `"Bảng lương tháng này đã được xác nhận. Liên hệ Super Admin để mở khóa."`
+- **Error:** `"This month's payroll has been confirmed. Contact Super Admin to unlock."`
 
-### PAY-03: Lương thực nhận không âm
-- **Rule:** `net_salary = gross - bhxh - tax >= 0`. Nếu âm → báo lỗi
+### PAY-03: Net salary must not be negative
+- **Rule:** `net_salary = gross - bhxh - tax >= 0`. If negative → report error
 - **Validate:** Edge Function
-- **Error:** `"Lương thực nhận âm do các khoản khấu trừ quá lớn. Vui lòng kiểm tra lại."`
+- **Error:** `"Net salary is negative due to large deductions. Please review."`
 
-### PAY-04: Hệ số OT hợp lệ
+### PAY-04: Valid OT multipliers
 - **Rule:** `ot_multiplier_weekday >= 1.0`, `ot_multiplier_weekend >= ot_multiplier_weekday`, `ot_multiplier_holiday >= ot_multiplier_weekend`
-- **Validate:** Client khi Admin cập nhật config
-- **Error:** `"Hệ số OT không hợp lệ (phải tăng dần: thường < cuối tuần < lễ)"`
+- **Validate:** Client when Admin updates config
+- **Error:** `"Invalid OT multiplier (must increase: weekday < weekend < holiday)"`
 
 ---
 
-## Nhân viên (Employee)
+## Employee
 
-### EMP-01: Số điện thoại unique
-- **Rule:** `phone` phải unique toàn hệ thống (dùng để đăng nhập)
-- **Validate:** DB constraint + client check trước khi submit
-- **Error:** `"Số điện thoại này đã được đăng ký"`
+### EMP-01: Unique phone number
+- **Rule:** `phone` must be unique system-wide (used for login)
+- **Validate:** DB constraint + client check before submit
+- **Error:** `"This phone number is already registered"`
 
-### EMP-02: Lương cơ bản > 0
+### EMP-02: Base salary > 0
 - **Rule:** `base_salary > 0`
 - **Validate:** Client
-- **Error:** `"Lương cơ bản phải lớn hơn 0"`
+- **Error:** `"Base salary must be greater than 0"`
 
-### EMP-03: Ngày vào làm không là tương lai xa
-- **Rule:** `join_date <= today + 30 days` (cho phép onboard trước 1 tháng)
+### EMP-03: Join date not too far in the future
+- **Rule:** `join_date <= today + 30 days` (allow onboard up to 1 month in advance)
 - **Validate:** Client (soft warning)
 
 ### EMP-04: Bulk import – row validation
-- **Rule:** Mỗi row phải có `full_name`, `phone` (valid format), `type`, `base_salary > 0`
-- **Validate:** Client trước khi gọi Edge Function
-- **Error:** Hiển thị danh sách row lỗi kèm lý do, cho phép sửa trước khi import
+- **Rule:** Each row must have `full_name`, `phone` (valid format), `type`, `base_salary > 0`
+- **Validate:** Client before calling Edge Function
+- **Error:** Display list of error rows with reason, allow editing before import
 
 ---
 
-## Ca làm việc (Shifts)
+## Shifts
 
-### SHF-01: Giờ kết thúc sau giờ bắt đầu (ca thường)
-- **Rule:** Nếu `is_overnight = false` thì `end_time > start_time`
+### SHF-01: End time must be after start time (regular shift)
+- **Rule:** If `is_overnight = false` then `end_time > start_time`
 - **Validate:** Client
-- **Error:** `"Giờ kết thúc phải sau giờ bắt đầu"`
+- **Error:** `"End time must be after start time"`
 
-### SHF-02: Grace period hợp lý
-- **Rule:** `grace_period_minutes >= 0` và `< (end_time - start_time) / 2`
+### SHF-02: Reasonable grace period
+- **Rule:** `grace_period_minutes >= 0` and `< (end_time - start_time) / 2`
 - **Validate:** Client
-- **Error:** `"Grace period không được vượt quá nửa thời gian ca"`
+- **Error:** `"Grace period cannot exceed half the shift duration"`
 
-### SHF-03: Không xóa ca đang được gán
-- **Rule:** Không cho xóa `shifts` nếu có `employee_shift_assignments` hoặc `shift_schedules` tương lai
+### SHF-03: Cannot delete shift that is assigned
+- **Rule:** Cannot delete `shifts` if there are `employee_shift_assignments` or future `shift_schedules`
 - **Validate:** Server
-- **Error:** `"Ca này đang được gán cho nhân viên. Hãy hủy gán trước khi xóa."`
+- **Error:** `"This shift is assigned to employees. Unassign before deleting."`
 
 ---
 
 ## Notification Triggers
 
-| Sự kiện | Người nhận | Loại |
+| Event | Recipient | Type |
 |---|---|---|
-| NV nộp đơn nghỉ | Admin + Manager của branch | `leave_request_new` |
-| Admin duyệt đơn nghỉ | NV nộp đơn | `leave_approved` |
-| Admin từ chối đơn nghỉ | NV nộp đơn | `leave_rejected` |
-| NV gửi yêu cầu đổi ca | Admin + Manager | `shift_change_new` |
-| Admin duyệt đổi ca | NV gửi yêu cầu | `shift_change_approved` |
-| Admin từ chối đổi ca | NV gửi yêu cầu | `shift_change_rejected` |
-| Admin xác nhận bảng lương | Tất cả NV trong branch | `payroll_confirmed` |
-| Admin chấm công thủ công | NV được chấm | `attendance_manual` |
+| Employee submits leave request | Admin + Manager of branch | `leave_request_new` |
+| Admin approves leave request | Employee who submitted | `leave_approved` |
+| Admin rejects leave request | Employee who submitted | `leave_rejected` |
+| Employee submits shift change | Admin + Manager | `shift_change_new` |
+| Admin approves shift change | Employee who submitted | `shift_change_approved` |
+| Admin rejects shift change | Employee who submitted | `shift_change_rejected` |
+| Admin confirms payroll | All employees in branch | `payroll_confirmed` |
+| Admin manually records attendance | Employee affected | `attendance_manual` |

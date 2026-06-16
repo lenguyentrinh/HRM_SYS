@@ -10,26 +10,26 @@
 
 ## 1. Environment Variables
 
-Create `.env` (không commit file này):
+Create `.env` (do not commit this file):
 
 ```env
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-key>
 ```
 
-Lấy từ: Supabase Dashboard → Settings → API → Project URL & anon key.
+Get from: Supabase Dashboard → Settings → API → Project URL & anon key.
 
 ---
 
 ## 2. Database Migrations
 
-Chạy tất cả migration files theo thứ tự trong `supabase/migrations/`:
+Run all migration files in order from `supabase/migrations/`:
 
 ```bash
 supabase db push
 ```
 
-Hoặc chạy từng file trong SQL Editor của Supabase Dashboard:
+Or run each file in the Supabase Dashboard SQL Editor:
 
 ```
 supabase/migrations/
@@ -44,14 +44,14 @@ supabase/migrations/
 
 ---
 
-## 3. Enable Realtime cho bảng notifications
+## 3. Enable Realtime for notifications table
 
-Sau khi chạy migration `20260519000001_notifications_realtime.sql`, kiểm tra lại trong SQL Editor:
+After running migration `20260519000001_notifications_realtime.sql`, verify in SQL Editor:
 
 ```sql
 SELECT tablename FROM pg_publication_tables
 WHERE pubname = 'supabase_realtime';
--- notifications phải xuất hiện trong kết quả
+-- notifications must appear in the results
 ```
 
 ---
@@ -62,17 +62,17 @@ WHERE pubname = 'supabase_realtime';
 # Login Supabase CLI
 supabase login
 
-# Link với project
+# Link with project
 supabase link --project-ref <project-ref>
 
-# Deploy từng function
+# Deploy each function
 supabase functions deploy generate-qr
 supabase functions deploy checkin
 supabase functions deploy calculate-payroll
 supabase functions deploy salary-preview
 ```
 
-Hoặc deploy tất cả:
+Or deploy all:
 
 ```bash
 supabase functions deploy
@@ -89,7 +89,7 @@ Set trong Supabase Dashboard → Edge Functions → Manage Secrets:
 | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key (Settings → API) |
 
-Hoặc qua CLI:
+Or via CLI:
 
 ```bash
 supabase secrets set SUPABASE_URL=https://xxx.supabase.co
@@ -98,16 +98,16 @@ supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
 ---
 
-## 6. Setup pg_cron (Tự động sinh QR token)
+## 6. Setup pg_cron (Auto-generate QR tokens)
 
-Chạy trong SQL Editor (Supabase Dashboard → SQL Editor):
+Run in SQL Editor (Supabase Dashboard → SQL Editor):
 
 ```sql
--- Enable pg_cron extension (nếu chưa có)
+-- Enable pg_cron extension (if not already enabled)
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
--- Schedule: generate QR tokens lúc 06:30 mỗi ngày
+-- Schedule: generate QR tokens at 06:30 daily
 SELECT cron.schedule(
   'generate-qr-tokens-daily',
   '30 6 * * *',
@@ -120,26 +120,26 @@ SELECT cron.schedule(
   $$
 );
 
--- Kiểm tra job đã được tạo
+-- Verify job was created
 SELECT * FROM cron.job;
 ```
 
 ---
 
-## 7. Build và Deploy Frontend
+## 7. Build and Deploy Frontend
 
-### Cloudflare Pages (khuyến nghị)
+### Cloudflare Pages (recommended)
 
 ```bash
 npm run build
-# Upload thư mục dist/ lên Cloudflare Pages
-# Hoặc kết nối GitHub repo và auto-deploy
+# Upload dist/ directory to Cloudflare Pages
+# Or connect GitHub repo for auto-deploy
 ```
 
-Cấu hình trong Cloudflare Pages:
+Configure in Cloudflare Pages:
 - **Build command:** `npm run build`
 - **Build output directory:** `dist`
-- **Environment variables:** Thêm `VITE_SUPABASE_URL` và `VITE_SUPABASE_ANON_KEY`
+- **Environment variables:** Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
 
 ### Nginx (self-hosted)
 
@@ -168,23 +168,23 @@ cp -r dist/* /var/www/hrm/dist/
 
 ---
 
-## 8. Kiểm tra sau deploy
+## 8. Post-deploy verification
 
-- [ ] Đăng nhập được với tài khoản admin
-- [ ] Đăng nhập được với tài khoản nhân viên
-- [ ] QR check-in hoạt động (cần pg_cron đã chạy ít nhất 1 lần)
-- [ ] Notification realtime hoạt động (gửi đơn nghỉ → admin thấy bell)
-- [ ] Tính lương Edge Function trả về kết quả
-- [ ] Salary preview hiển thị trên dashboard nhân viên
+- [ ] Login works with admin account
+- [ ] Login works with employee account
+- [ ] QR check-in works (requires pg_cron to have run at least once)
+- [ ] Realtime notifications work (submit leave request → admin sees bell)
+- [ ] Payroll Edge Function returns results
+- [ ] Salary preview displays on employee dashboard
 
 ---
 
-## 9. Quản lý sau khi deploy
+## 9. Post-deployment management
 
-### Reset QR token thủ công
+### Manual QR token reset
 
 ```sql
--- Chạy generate-qr ngay lập tức
+-- Run generate-qr immediately
 SELECT net.http_post(
   url := 'https://<project-ref>.supabase.co/functions/v1/generate-qr',
   headers := '{"Authorization": "Bearer <service-role-key>"}'::jsonb,
@@ -192,7 +192,7 @@ SELECT net.http_post(
 );
 ```
 
-### Unlock bảng lương đã confirmed (chỉ super_admin)
+### Unlock confirmed payroll (super_admin only)
 
 ```sql
 UPDATE payroll_records

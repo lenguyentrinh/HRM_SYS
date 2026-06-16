@@ -1,9 +1,9 @@
-# Skill: Tạo Supabase Edge Function
+# Skill: Create a Supabase Edge Function
 
-## Dùng khi
-Cần logic chạy server-side: tính lương, validate QR, bulk operations.
+## When to use
+When you need server-side logic: payroll calculation, QR validation, bulk operations.
 
-## Tạo file
+## Create file
 
 ```
 supabase/functions/<function-name>/index.ts
@@ -31,7 +31,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Unauthorized')
 
-    // 2. Init Supabase client với user token (respects RLS)
+    // 2. Init Supabase client with user token (respects RLS)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -65,6 +65,6 @@ supabase functions deploy <function-name>
 ```
 
 ## Notes
-- Nếu cần bypass RLS (VD: pg_cron job), dùng `SUPABASE_SERVICE_ROLE_KEY` thay vì anon key
-- Luôn validate input trước khi query DB
-- Tham khảo API.md cho danh sách Edge Functions đã có
+- If you need to bypass RLS (e.g., pg_cron job), use `SUPABASE_SERVICE_ROLE_KEY` instead of anon key
+- Always validate input before querying DB
+- Refer to API.md for existing Edge Functions list
