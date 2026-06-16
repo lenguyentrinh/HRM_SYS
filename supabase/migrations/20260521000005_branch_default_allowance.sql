@@ -1,0 +1,3 @@
+ALTER TABLE branches
+  ADD COLUMN IF NOT EXISTS default_allowance_fulltime NUMERIC DEFAULT 0 NOT NULL,
+  ADD COLUMN IF NOT EXISTS default_allowance_parttime NUMERIC DEFAULT 0 NOT NULL;

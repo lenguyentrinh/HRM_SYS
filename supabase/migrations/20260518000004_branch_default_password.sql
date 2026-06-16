@@ -1,0 +1,2 @@
+ALTER TABLE branches
+  ADD COLUMN IF NOT EXISTS default_employee_password TEXT NOT NULL DEFAULT '123456';
