@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HRM System – Project Overview & AI Exercise</title>
+<style>
+  :root {
+    --orange: #f97316;
+    --orange-light: #fff7ed;
+    --orange-border: #fed7aa;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-400: #94a3b8;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50:  #f8fafc;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--slate-50);
+    color: var(--slate-800);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--slate-900);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    height: 56px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  nav .logo { color: var(--orange); font-weight: 800; font-size: 1.1rem; white-space: nowrap; }
+  nav a {
+    color: var(--slate-400); text-decoration: none; font-size: .85rem;
+    padding: .25rem .5rem; border-radius: 6px; transition: color .15s;
+  }
+  nav a:hover { color: #fff; }
+  nav .nav-links { display: flex; gap: .25rem; overflow-x: auto; }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-700) 100%);
+    color: #fff; padding: 3rem 2.5rem; border-radius: 16px; margin-bottom: 3rem;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '⚡'; position: absolute; right: 2rem; top: 1.5rem;
+    font-size: 5rem; opacity: .06;
+  }
+  .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: .5rem; }
+  .hero .subtitle { color: var(--slate-400); font-size: 1rem; margin-bottom: 1.5rem; }
+  .hero .tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .tag {
+    background: rgba(249,115,22,.15); color: var(--orange);
+    border: 1px solid rgba(249,115,22,.3);
+    padding: .25rem .75rem; border-radius: 99px; font-size: .78rem; font-weight: 600;
+  }
+
+  /* SECTION */
+  section { margin-bottom: 3rem; scroll-margin-top: 72px; }
+  .section-title {
+    font-size: 1.35rem; font-weight: 800; color: var(--slate-900);
+    margin-bottom: 1.25rem; padding-bottom: .5rem;
+    border-bottom: 2px solid var(--orange); display: inline-block;
+  }
+  .section-title span { color: var(--orange); }
+
+  /* CARD */
+  .card {
+    background: #fff; border: 1px solid var(--slate-200);
+    border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;
+  }
+  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+  .card p, .card li { font-size: .9rem; color: var(--slate-600); }
+  .card ul { padding-left: 1.25rem; }
+  .card li { margin-bottom: .25rem; }
+
+  /* PHASE STEPS */
+  .phase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .phase-card {
+    background: #fff; border: 1px solid var(--slate-200); border-radius: 12px;
+    padding: 1.25rem; position: relative;
+  }
+  .phase-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-weight: 800; font-size: .85rem; margin-bottom: .75rem;
+  }
+  .phase-1 .phase-badge { background: var(--blue-light); color: var(--blue); }
+  .phase-2 .phase-badge { background: var(--orange-light); color: var(--orange); }
+  .phase-3 .phase-badge { background: var(--green-light); color: var(--green); }
+  .phase-4 .phase-badge { background: var(--purple-light); color: var(--purple); }
+  .phase-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
+  .phase-card ul { padding-left: 1.1rem; }
+  .phase-card li { font-size: .83rem; color: var(--slate-600); margin-bottom: .2rem; }
+
+  /* FEATURE TABLE */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-group {
+    background: #fff; border: 1px solid var(--slate-200); border-radius: 12px; padding: 1.25rem;
+  }
+  .feature-group h3 {
+    font-size: .9rem; font-weight: 700; margin-bottom: .75rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .feature-group h3 .icon { font-size: 1.1rem; }
+  .feature-group li { font-size: .83rem; color: var(--slate-600); margin-bottom: .3rem; padding-left: .25rem; }
+  .feature-group ul { padding-left: 1.1rem; }
+
+  /* DIR TREE */
+  .tree {
+    background: var(--slate-900); color: #e2e8f0;
+    border-radius: 12px; padding: 1.5rem; font-family: 'Courier New', monospace;
+    font-size: .82rem; line-height: 1.8; overflow-x: auto;
+    white-space: pre;
+  }
+  .tree .folder { color: #93c5fd; font-weight: 700; }
+  .tree .file-ts { color: #86efac; }
+  .tree .file-other { color: #fcd34d; }
+  .tree .comment { color: #64748b; }
+
+  /* CHAT CONVERSATIONS */
+  .chat-section { margin-top: 2rem; }
+  .chat-section h3 {
+    font-size: 1rem; font-weight: 800; color: var(--slate-900);
+    margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem;
+  }
+  .chat-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .chat-tab {
+    padding: .35rem .9rem; border-radius: 99px; font-size: .78rem; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--slate-200); background: #fff;
+    color: var(--slate-600); transition: all .15s;
+  }
+  .chat-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .chat-window {
+    background: #fff; border: 1px solid var(--slate-200);
+    border-radius: 14px; overflow: hidden;
+  }
+  .chat-window-header {
+    background: var(--slate-50); border-bottom: 1px solid var(--slate-200);
+    padding: .75rem 1.25rem; font-size: .8rem; font-weight: 600; color: var(--slate-500);
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .chat-messages { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .msg { display: flex; gap: .75rem; align-items: flex-start; max-width: 90%; }
+  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800;
+  }
+  .msg.user .msg-avatar { background: #dbeafe; color: var(--blue); }
+  .msg.ai .msg-avatar { background: #f0fdf4; color: var(--green); }
+  .msg-bubble {
+    padding: .75rem 1rem; border-radius: 12px; font-size: .83rem; line-height: 1.6;
+  }
+  .msg.user .msg-bubble {
+    background: var(--blue); color: #fff; border-bottom-right-radius: 4px;
+  }
+  .msg.ai .msg-bubble {
+    background: var(--slate-50); border: 1px solid var(--slate-200);
+    color: var(--slate-800); border-bottom-left-radius: 4px;
+  }
+  .msg-bubble code {
+    background: rgba(255,255,255,.15); padding: .1rem .3rem; border-radius: 3px;
+    font-family: monospace; font-size: .78rem;
+  }
+  .msg.ai .msg-bubble code { background: var(--slate-200); color: var(--slate-800); }
+  .msg-bubble pre {
+    background: var(--slate-900); color: #e2e8f0; border-radius: 8px;
+    padding: .75rem 1rem; margin-top: .5rem; font-size: .75rem; line-height: 1.6;
+    overflow-x: auto; white-space: pre;
+  }
+  .msg-bubble ul { padding-left: 1.1rem; margin-top: .35rem; }
+  .msg-bubble li { margin-bottom: .2rem; }
+  .msg-bubble strong { font-weight: 700; }
+  .chat-hidden { display: none; }
+
+  /* TECH STACK */
+  .stack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .75rem; }
+  .stack-item {
+    background: #fff; border: 1px solid var(--slate-200); border-radius: 10px;
+    padding: 1rem; display: flex; flex-direction: column; gap: .25rem;
+  }
+  .stack-item .name { font-weight: 700; font-size: .9rem; color: var(--slate-900); }
+  .stack-item .role { font-size: .78rem; color: var(--slate-500); }
+
+  /* EXERCISE */
+  .exercise-header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border-radius: 14px; padding: 2rem; margin-bottom: 1.5rem; color: #fff;
+  }
+  .exercise-header h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: .5rem; }
+  .exercise-header p { color: #c7d2fe; font-size: .9rem; }
+  .exercise-header .ex-meta { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+  .ex-chip {
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+    padding: .2rem .75rem; border-radius: 99px; font-size: .78rem; color: #e0e7ff;
+  }
+
+  .flow-diagram {
+    background: #fff; border: 1px solid var(--slate-200); border-radius: 12px;
+    padding: 1.5rem; margin-bottom: 1.25rem;
+  }
+  .flow-step {
+    display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-start;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .flow-num {
+    min-width: 32px; height: 32px; border-radius: 50%;
+    background: var(--orange); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .85rem; flex-shrink: 0; margin-top: 2px;
+  }
+  .flow-content h4 { font-size: .9rem; font-weight: 700; margin-bottom: .25rem; }
+  .flow-content p, .flow-content li { font-size: .83rem; color: var(--slate-600); }
+  .flow-content ul { padding-left: 1.1rem; }
+  .flow-arrow {
+    text-align: center; color: var(--slate-400); font-size: .8rem;
+    padding: .1rem 0 .1rem 2.5rem; margin-bottom: 1.25rem;
+  }
+
+  .code-block {
+    background: var(--slate-900); color: #e2e8f0; border-radius: 10px;
+    padding: 1rem 1.25rem; font-family: 'Courier New', monospace;
+    font-size: .8rem; line-height: 1.7; overflow-x: auto; margin: .75rem 0;
+  }
+  .code-block .kw { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .cm { color: #64748b; }
+  .code-block .fn { color: #93c5fd; }
+  .code-block .num { color: #fbbf24; }
+
+  .task-list { counter-reset: task; }
+  .task-item {
+    background: #fff; border: 1px solid var(--slate-200); border-radius: 10px;
+    padding: 1.1rem 1.25rem; margin-bottom: .75rem; position: relative;
+    padding-left: 3.5rem;
+  }
+  .task-item::before {
+    counter-increment: task;
+    content: counter(task);
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--purple-light); color: var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .8rem;
+  }
+  .task-item h4 { font-size: .88rem; font-weight: 700; margin-bottom: .3rem; }
+  .task-item p { font-size: .82rem; color: var(--slate-500); }
+  .task-item .hint {
+    margin-top: .5rem; font-size: .78rem; color: var(--orange);
+    background: var(--orange-light); border: 1px solid var(--orange-border);
+    border-radius: 6px; padding: .3rem .6rem; display: inline-block;
+  }
+
+  .callout {
+    border-radius: 10px; padding: 1rem 1.25rem; margin: .75rem 0; font-size: .85rem;
+    display: flex; gap: .75rem; align-items: flex-start;
+  }
+  .callout.info { background: var(--blue-light); border: 1px solid #bfdbfe; }
+  .callout.warn { background: #fffbeb; border: 1px solid #fde68a; }
+  .callout.success { background: var(--green-light); border: 1px solid #bbf7d0; }
+  .callout .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .callout .text { color: var(--slate-700); line-height: 1.5; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 650px) { .two-col { grid-template-columns: 1fr; } }
+
+  .file-ref {
+    display: inline-block; background: var(--slate-100); border: 1px solid var(--slate-200);
+    border-radius: 5px; padding: .1rem .4rem; font-family: monospace; font-size: .78rem;
+    color: var(--slate-700);
+  }
+
+  hr { border: none; border-top: 1px solid var(--slate-200); margin: 2rem 0; }
+  a.anchor { color: inherit; text-decoration: none; }
+  a.anchor:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">🏢 HRM System</div>
+  <div class="nav-links">
+    <a href="#overview">Tổng quan</a>
+    <a href="#steps">Các bước tạo</a>
+    <a href="#features">Tính năng</a>
+    <a href="#directory">Cây thư mục</a>
+    <a href="#exercise">Bài tập AI</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>HRM System</h1>
+    <p class="subtitle">Web app quản lý nhân sự nội bộ — chấm công QR, tính lương, nghỉ phép</p>
+    <div class="tags">
+      <span class="tag">React 18 + Vite</span>
+      <span class="tag">TypeScript Strict</span>
+      <span class="tag">Supabase + PostgreSQL</span>
+      <span class="tag">Tailwind + shadcn/ui</span>
+      <span class="tag">Edge Functions (Deno)</span>
+      <span class="tag">~50 nhân viên</span>
+      <span class="tag">2 Portal riêng biệt</span>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 1. TỔNG QUAN -->
+  <!-- ─────────────────────────────────────────── -->
+  <section id="overview">
+    <div class="section-title">1. Mô tả <span>App</span></div>
+
+    <div class="card">
+      <h3>App là gì?</h3>
+      <p>
+        HRM System là <strong>web app nội bộ</strong> để quản lý nhân sự cho doanh nghiệp vừa và nhỏ (~50 người).
+        App giải quyết 3 nghiệp vụ cốt lõi: <strong>chấm công bằng QR code</strong>, <strong>tính lương tự động</strong> và <strong>quản lý nghỉ phép</strong>.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>👨‍💼 Admin Portal <code style="font-size:.75rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">/admin/*</code></h3>
+        <ul>
+          <li>Dành cho <strong>super_admin</strong> và <strong>manager</strong></li>
+          <li>Quản lý nhân sự, ca làm việc, chấm công</li>
+          <li>Duyệt đơn nghỉ phép, đổi ca</li>
+          <li>Tính lương hàng tháng</li>
+          <li>Báo cáo & thống kê</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>👤 Employee Portal <code style="font-size:.75rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">/</code></h3>
+        <ul>
+          <li>Dành cho <strong>employee</strong></li>
+          <li>Quét QR check-in/check-out hàng ngày</li>
+          <li>Xem lương dự kiến realtime</li>
+          <li>Nộp đơn xin nghỉ, yêu cầu đổi ca</li>
+          <li>Lịch sử chấm công cá nhân</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>🔑 3 Roles người dùng</h3>
+        <ul>
+          <li><strong>super_admin</strong> — Toàn quyền, cấu hình hệ thống</li>
+          <li><strong>manager</strong> — Quản lý vận hành, duyệt đơn, xem lương</li>
+          <li><strong>employee</strong> — Chấm công, xem lương cá nhân, nộp đơn</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>⚙️ Đặc điểm kỹ thuật</h3>
+        <ul>
+          <li>Custom auth (SHA-256, không dùng Supabase Auth)</li>
+          <li>Multi-branch ready (<code>branch_id</code> trên mọi bảng)</li>
+          <li>QR token tự động sinh qua <code>pg_cron</code></li>
+          <li>Realtime notifications qua Supabase Realtime</li>
+          <li>Lương tính bởi Edge Function (Deno)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 2. CÁC BƯỚC TẠO DỰ ÁN -->
+  <!-- ─────────────────────────────────────────── -->
+  <section id="steps">
+    <div class="section-title">2. Các bước <span>tạo dự án</span></div>
+
+    <div class="phase-grid">
+      <div class="phase-card phase-1">
+        <div class="phase-badge">1</div>
+        <h3>Foundation — Khởi tạo & Auth</h3>
+        <ul>
+          <li>Khởi tạo Vite + React + TypeScript + Tailwind</li>
+          <li>Cài shadcn/ui, TanStack Query, Zustand, React Router</li>
+          <li>Tạo Supabase project, chạy SQL migrations</li>
+          <li>Cấu hình RLS policies cho tất cả bảng</li>
+          <li>Custom auth flow (phone + SHA-256 password)</li>
+          <li>Admin Layout (sidebar, topbar) + Employee Layout (bottom nav)</li>
+          <li>Route guards theo role</li>
+          <li>CRUD nhân viên: danh sách, tìm kiếm, lọc, thêm/sửa</li>
+          <li>Bulk import Excel + export danh sách</li>
+          <li>CRUD ca làm việc (shifts)</li>
+        </ul>
+      </div>
+
+      <div class="phase-card phase-2">
+        <div class="phase-badge">2</div>
+        <h3>Chấm công — QR & Attendance</h3>
+        <ul>
+          <li>Roster scheduling: calendar grid xếp ca theo tuần</li>
+          <li>Edge Function <code>generate-qr</code> sinh token mỗi ca</li>
+          <li>pg_cron job tự động sinh QR lúc 06:30 VN mỗi ngày</li>
+          <li>Trang tablet hiển thị QR lớn, auto-refresh</li>
+          <li>Employee quét QR bằng camera (BarcodeDetector + jsQR fallback)</li>
+          <li>Edge Function <code>checkin</code> validate + ghi attendance</li>
+          <li>Tự động tính: đúng giờ / trễ / về sớm / OT</li>
+          <li>Chấm công thủ công (Admin)</li>
+          <li>Bảng chấm công admin: filter, phân trang, export</li>
+          <li>Yêu cầu đổi ca: employee gửi → admin duyệt</li>
+        </ul>
+      </div>
+
+      <div class="phase-card phase-3">
+        <div class="phase-badge">3</div>
+        <h3>Nghỉ phép, Lương & Notifications</h3>
+        <ul>
+          <li>Cấu hình leave policy (Admin Settings)</li>
+          <li>Employee nộp đơn nghỉ → admin duyệt/từ chối</li>
+          <li>Auto sync attendance + trừ leave_balances khi duyệt</li>
+          <li>Cấu hình lương (OT multiplier, phụ cấp, thưởng/phạt)</li>
+          <li>Edge Function <code>calculate-payroll</code> tính lương</li>
+          <li>Bảng lương admin: draft → confirmed → export Excel</li>
+          <li>Edge Function <code>salary-preview</code> lương realtime</li>
+          <li>Realtime notifications (Supabase channel, bell UI)</li>
+          <li>Dashboard stats + biểu đồ chuyên cần</li>
+          <li>Analytics: xếp hạng nhân viên, thống kê quỹ lương</li>
+        </ul>
+      </div>
+
+      <div class="phase-card phase-4">
+        <div class="phase-badge">4+</div>
+        <h3>Refactor, Fix & Polish</h3>
+        <ul>
+          <li>Tách code theo feature-based folder structure</li>
+          <li>Fix timezone bugs (UTC vs VN UTC+7)</li>
+          <li>Fix QR token expiry calculation</li>
+          <li>Vercel <code>rewrites</code> để SPA routing không 404</li>
+          <li>iOS camera fallback (jsQR + file input)</li>
+          <li>Fix error messages từ Edge Functions</li>
+          <li>Playwright E2E automation tests (Phase 1–9)</li>
+          <li>Tablet QR: multi-shift selector với auto-select</li>
+          <li>Audit logs cho thao tác admin quan trọng</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout info" style="margin-top:1rem">
+      <span class="icon">ℹ️</span>
+      <div class="text">
+        Tổng timeline: <strong>~12 phases</strong> (mỗi phase 2–5 ngày). Toàn bộ được phát triển bằng
+        <strong>AI-assisted development</strong> với Claude Code làm coding assistant.
+        Mỗi phase có handoff document để QC test và bàn giao.
+      </div>
+    </div>
+
+    <!-- CHAT EXAMPLES -->
+    <div class="chat-section">
+      <h3>💬 Mẫu hội thoại thực tế với AI trong quá trình phát triển</h3>
+
+      <div class="chat-tabs">
+        <div class="chat-tab active" onclick="switchChat('setup')">Phase 1 – Setup & Auth</div>
+        <div class="chat-tab" onclick="switchChat('qr')">Phase 2 – QR Check-in</div>
+        <div class="chat-tab" onclick="switchChat('bug-camera')">Bug – Camera iOS</div>
+        <div class="chat-tab" onclick="switchChat('bug-tz')">Bug – Timezone UTC</div>
+        <div class="chat-tab" onclick="switchChat('payroll')">Phase 3 – Tính lương</div>
+        <div class="chat-tab" onclick="switchChat('refactor')">Tính năng mới</div>
+      </div>
+
+      <!-- CHAT 1: SETUP -->
+      <div class="chat-window" id="chat-setup">
+        <div class="chat-window-header">🏗 Phase 1 — Khởi tạo project & Custom Auth</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Tôi muốn xây dựng một web app HRM nội bộ cho công ty ~50 nhân viên. Stack: React 18 + Vite + TypeScript + Supabase. Cần 2 portal: Admin và Employee. Auth bằng số điện thoại + mật khẩu, <strong>không dùng Supabase Auth</strong> — tự làm custom với bảng <code>users</code> và SHA-256 hash. Bắt đầu từ đâu?
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Tôi sẽ setup theo thứ tự này:<br><br>
+              <strong>1. Khởi tạo project</strong><br>
+              <ul>
+                <li>Vite + React + TypeScript, cài Tailwind + shadcn/ui</li>
+                <li>TanStack Query (server state), Zustand (UI state), React Router v6</li>
+              </ul>
+              <strong>2. Custom Auth flow</strong> — vì không dùng Supabase Auth, cần:<br>
+              <ul>
+                <li>Bảng <code>users</code> với <code>phone</code>, <code>password_hash</code> (SHA-256 hex), <code>role</code></li>
+                <li><code>src/lib/auth.ts</code>: hàm <code>login(phone, password)</code> — hash client-side rồi query DB</li>
+                <li>Zustand store persist vào localStorage, route guard đọc synchronous (không async khi app load)</li>
+              </ul>
+              <strong>3. Layout</strong>: Admin (sidebar + topbar), Employee (bottom nav mobile-first)<br><br>
+              Bắt đầu với migration SQL tạo schema trước nhé?
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Đúng rồi. Tạo migration tạo bảng <code>users</code> và <code>employees</code>. Kèm RLS policy: anon có thể đọc users để login, nhưng chỉ đọc đúng record của mình sau khi biết id.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Đây là migration SQL:
+              <pre>-- users table (custom auth, no supabase auth)
+create table users (
+  id          uuid primary key default gen_random_uuid(),
+  phone       text unique not null,
+  password_hash text not null,  -- SHA-256 hex
+  role        text not null check (role in ('super_admin','manager','employee')),
+  branch_id   uuid references branches(id),
+  created_at  timestamptz default now()
+);
+
+-- RLS: permissive cho login flow (app tự validate)
+alter table users enable row level security;
+create policy "allow anon read for login"
+  on users for select to anon using (true);
+
+-- employees table
+create table employees (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid unique references users(id),
+  branch_id   uuid not null references branches(id),
+  full_name   text not null,
+  base_salary numeric not null default 0,
+  status      text default 'active',
+  ...
+);</pre>
+              Login flow trong <code>auth.ts</code>: hash password bằng <code>crypto.subtle.digest('SHA-256')</code> (Web Crypto API, không cần thư viện), rồi <code>supabase.from('users').select().eq('phone', phone).eq('password_hash', hash).single()</code>.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Làm luôn <code>authStore.ts</code> và route guard. Sau khi login: <code>super_admin</code>/<code>manager</code> → <code>/admin/dashboard</code>, <code>employee</code> → <code>/</code>.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              <code>authStore.ts</code> dùng Zustand với <code>persist</code> middleware vào key <code>hrm-auth</code>:<br><br>
+              Route guard đọc store synchronously — không cần <code>useEffect</code> hay loading state khi app khởi động. Nếu <code>user === null</code> → redirect <code>/login</code>. Nếu role không khớp → redirect về portal đúng của role đó. Logic này đặt trong <code>router.tsx</code> dùng <code>&lt;Navigate&gt;</code> component của React Router.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT 2: QR CHECK-IN -->
+      <div class="chat-window chat-hidden" id="chat-qr">
+        <div class="chat-window-header">📷 Phase 2 — Tính năng QR Check-in</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Làm tính năng chấm công QR. Flow: tablet đặt tại văn phòng hiển thị mã QR của ca hiện tại, nhân viên dùng điện thoại quét. QR token được sinh tự động mỗi ngày bằng <code>pg_cron</code>. Mỗi ca có 1 token UUID, expire đúng giờ kết ca.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Cần 3 phần làm song song:<br><br>
+              <strong>1. Edge Function <code>generate-qr</code></strong> — nhận <code>{run_all: true}</code>, đọc tất cả ca active, tính <code>expires_at = end_time</code> của ca, upsert vào bảng <code>qr_tokens</code> với UNIQUE <code>(shift_id, date)</code>.<br><br>
+              <strong>2. pg_cron job</strong> — chạy mỗi ngày lúc 06:30 VN gọi function trên.<br><br>
+              <strong>3. TabletQRPage</strong> (<code>/tablet/:branch_id</code>, không cần login) — load ca đang active theo giờ thực, fetch token, render <code>&lt;QRCode value="https://app.com/checkin?token=UUID"/&gt;</code>, auto-refresh 60s.<br><br>
+              <strong>4. CheckinPage</strong> (mobile) — bật camera, dùng <code>BarcodeDetector</code> API scan liên tục, khi phát hiện QR → extract token từ URL → confirm screen → gọi Edge Function <code>checkin</code>.<br><br>
+              Bắt đầu với Edge Function <code>checkin</code> (phần validate) vì đây là logic phức tạp nhất?
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Đúng. Validate cần: token hợp lệ + chưa hết hạn, nhân viên phải thuộc ca đó (ưu tiên <code>shift_schedules</code>, fallback <code>employee_shift_assignments</code>), chưa check-in ca này rồi. Nếu ok thì tính số phút trễ và ghi <code>attendance_records</code>.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Logic validate trong <code>checkin/index.ts</code>:<br><br>
+              <strong>ATT-01</strong>: <code>SELECT * FROM qr_tokens WHERE token = $1</code> → kiểm tra <code>is_active = true</code> và <code>expires_at &gt; now()</code><br>
+              <strong>ATT-02</strong>: Lookup ca của NV ngày đó — query <code>shift_schedules</code> theo <code>employee_id + date</code> trước. Nếu không có → query <code>employee_shift_assignments</code> theo <code>employee_id + month + year</code>. So sánh với <code>qrToken.shift_id</code>.<br>
+              <strong>ATT-03</strong>: Query <code>attendance_records WHERE employee_id + date + shift_id</code> → nếu có <code>check_in_at</code> rồi → lỗi "đã check-in"<br>
+              <strong>ATT-05</strong>: <code>isLate = now &gt; (shiftStart + grace_period_minutes)</code><br><br>
+              Sau đó upsert <code>attendance_records</code> và insert <code>notifications</code> cho NV.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Nhân viên check-in sai ca thì nên có text nội dung rõ ràng, không trả lỗi từ edge function như vậy. Lỗi hiện tại chỉ hiện "Edge Function returned a non-2xx status code".
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Vấn đề: <code>FunctionsHttpError.message</code> luôn là generic string đó, message thật nằm trong <code>error.context</code> (Response object). Fix trong <code>useQrCheckin</code>:<br>
+              <pre>if (error) {
+  let message = error.message
+  try {
+    const body = await (error as { context?: Response })
+      .context?.json()
+    if (body?.message) message = body.message
+  } catch { /* ignore */ }
+  throw new Error(message)
+}</pre>
+              Sau đó NV sẽ thấy đúng: "Bạn không thuộc ca làm việc này" thay vì lỗi kỹ thuật.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT 3: BUG CAMERA -->
+      <div class="chat-window chat-hidden" id="chat-bug-camera">
+        <div class="chat-window-header">🐛 Bug – Camera không mở được trên iOS</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              lỗi này khá là một vấn đề lớn vì khi mở webapp trên web mobile thì không mở được camera để quét QR
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Vấn đề: code hiện tại chỉ dùng <code>BarcodeDetector</code> API — API này chỉ có trên Chrome Android và Chrome/Edge desktop, <strong>không có trên iOS Safari hoặc Firefox</strong>.<br><br>
+              Fix: thêm 2 tầng fallback:<br>
+              <ul>
+                <li><strong>jsQR</strong> (thư viện canvas) — hoạt động trên mọi browser có <code>getUserMedia</code></li>
+                <li><strong>File input</strong> <code>capture="environment"</code> — khi <code>getUserMedia</code> thực sự bị chặn</li>
+              </ul>
+              Flow mới: thử <code>BarcodeDetector</code> → không có thì chạy jsQR canvas loop → nếu <code>getUserMedia</code> throw thì click file input để mở camera app native.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              chrome vẫn không mở được máy ảnh trên Iphone
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              iOS Chrome dùng WebKit engine (Apple bắt buộc), nên <code>getUserMedia</code> bị chặn trên Chrome/Firefox iOS. Tôi sẽ thêm detection function <code>isIOSNonSafari()</code> — nếu là iOS + không phải Safari → bỏ qua camera stream, dùng thẳng file input <code>capture="environment"</code> để mở native camera.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Khoan đã. Tôi vừa check: Chrome trên iPhone/iPad <strong>từ iOS 14.3 trở lên CÓ THỂ</strong> dùng <code>getUserMedia()</code> rồi — Apple đã bỏ restriction đó. Website mở camera trong Chrome iOS bình thường nếu dùng đúng API. Gợi ý này có thể fix được vấn đề không?
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Bạn đúng, tôi sai. Apple đã lift restriction đó từ iOS 14.3. <code>isIOSNonSafari()</code> detection là sai và gây hại — nó bypass camera live scan cho Chrome iOS không cần thiết.<br><br>
+              Fix: xóa function đó và cái <code>useEffect</code> gọi nó. Giữ lại <code>fileFallback</code> state nhưng chỉ set khi <code>getUserMedia</code> thực sự throw (catch block) — đây là fallback thực sự cho trường hợp user từ chối quyền camera.<br><br>
+              Kết quả: Chrome iOS sẽ mở camera live stream bình thường và dùng jsQR canvas loop để scan QR tự động.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT 4: BUG TIMEZONE -->
+      <div class="chat-window chat-hidden" id="chat-bug-tz">
+        <div class="chat-window-header">🐛 Bug – QR token báo hết hạn dù chưa hết ca</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              nhân viên ca lỡ (9h–15h) scan QR ca lỡ → báo "Mã QR đã hết hạn hoặc không hợp lệ". Tôi đính kèm curl request thực tế. Token UUID là <code>788cf9dc-fe86-4bc6-b4c8-c50daaf8da73</code>.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Đọc lại <code>generate-qr/index.ts</code> và <code>checkin/index.ts</code>. Tìm ra <strong>3 bugs timezone</strong>:<br><br>
+              <strong>Bug 1 – dateStr dùng UTC thay vì VN time</strong>:<br>
+              Cron chạy <code>30 23 * * *</code> UTC = <strong>06:30 sáng VN ngày hôm sau</strong>. Nhưng <code>new Date().toISOString()</code> trả UTC → lúc 06:30 VN vẫn là <code>23:30 UTC ngày hôm trước</code> → <code>dateStr = "2025-05-21"</code> (hôm qua!). Token được lưu với date = hôm qua.<br><br>
+              <strong>Bug 2 – expires_at không có timezone</strong>:<br>
+              <code>new Date("2025-05-21T15:00:00")</code> trên server UTC = <code>15:00 UTC = 22:00 VN</code>. Nhưng ca kết thúc 15:00 VN = 08:00 UTC. Vậy <code>expires_at</code> của hôm qua (<code>2025-05-21T15:00:00Z</code>) khi so với <code>now</code> (sáng 22/05 UTC) → đã hết hạn!<br><br>
+              <strong>Bug 3 – shift.start_time format trong checkin</strong>:<br>
+              PostgreSQL TIME trả <code>"09:00:00"</code>. Code append thêm <code>:00</code> → <code>"09:00:00:00"</code> = Invalid Date → tính trễ sai.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Fix hết đi
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Fix trong <code>generate-qr/index.ts</code>:
+              <pre>// Dùng VN date (+7h vào UTC)
+const VN_OFFSET = 7 * 60 * 60 * 1000
+const dateStr = body.date ??
+  new Date(Date.now() + VN_OFFSET)
+    .toISOString().split('T')[0]
+
+// expires_at đúng timezone VN
+const expiresAt = new Date(
+  `${expireDate}T${endTimeHHMM}:00+07:00`
+)</pre>
+              Fix trong <code>checkin/index.ts</code>:
+              <pre>// Slice "09:00:00" → "09:00", thêm timezone VN
+const startHHMM = shift.start_time.slice(0, 5)
+const shiftStart = new Date(
+  `${dateStr}T${startHHMM}:00+07:00`
+)</pre>
+              Sau khi deploy, cần regenerate QR hôm nay (token cũ đã sai date).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT 5: PAYROLL -->
+      <div class="chat-window chat-hidden" id="chat-payroll">
+        <div class="chat-window-header">💰 Phase 3 — Edge Function tính lương</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Làm Edge Function <code>calculate-payroll</code>. Công thức:<br>
+              - <code>salary_earned = base_salary × (working_days / standard_days)</code><br>
+              - <code>overtime_pay = (base_salary / standard_days / shift_hours) × ot_hours × ot_multiplier</code><br>
+              - <code>gross = salary_earned + allowance + ot_pay + bonus - late_penalty - absent_penalty</code><br>
+              - <code>net = gross - bhxh - tax</code><br>
+              Sau khi tính xong lưu vào <code>payroll_records</code> với status <code>draft</code>.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Function nhận <code>{employee_id, month, year}</code>, đọc dữ liệu song song:<br>
+              <ul>
+                <li><code>attendance_records</code> trong tháng → đếm ngày công, giờ OT, số lần trễ</li>
+                <li><code>employees</code> → <code>base_salary</code>, <code>allowance</code>, <code>type</code></li>
+                <li><code>payroll_configs</code> → <code>ot_multiplier</code>, <code>late_penalty_per_minute</code>, <code>bhxh_rate</code></li>
+                <li><code>leave_requests</code> (approved) → xác định ngày nghỉ có lương</li>
+              </ul>
+              Điểm quan trọng: <code>standard_days</code> là số ngày làm việc trong tháng (trừ cuối tuần + ngày lễ), không phải 26 hay 30 cố định. Tính bằng cách đếm ngày trong tháng loại trừ Thứ 7/CN và <code>holiday_dates</code> từ config.<br><br>
+              Sau khi tính xong: <code>upsert payroll_records</code> với <code>onConflict: 'employee_id, month, year'</code> — cho phép tính lại nhiều lần khi vẫn còn ở status <code>draft</code>.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              Thêm tính năng: admin nhấn "Xác nhận phát lương" thì status chuyển <code>confirmed</code> và lock lại — không tính lại được nữa trừ khi super_admin unlock.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Thêm check ở đầu <code>calculate-payroll</code>:<br>
+              <pre>const existing = await supabase
+  .from('payroll_records')
+  .select('status')
+  .eq('employee_id', employee_id)
+  .eq('month', month).eq('year', year)
+  .maybeSingle()
+
+if (existing?.status === 'confirmed') {
+  return { success: false,
+    message: 'Bảng lương đã được xác nhận, không thể tính lại' }
+}</pre>
+              Thêm mutation <code>useConfirmPayroll</code> ở frontend: update status <code>draft → confirmed</code>. Chỉ super_admin mới có nút unlock (set lại về <code>draft</code>). Thao tác này ghi vào <code>audit_logs</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT 6: NEW FEATURE -->
+      <div class="chat-window chat-hidden" id="chat-refactor">
+        <div class="chat-window-header">✨ Tính năng mới — Tablet hiển thị nhiều ca trùng giờ</div>
+        <div class="chat-messages">
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              conflict logic ở màn hình hiện mã QR. Tôi có rất nhiều ca làm việc, các ca có thể đè lên nhau. Ví dụ ca sáng 7h–12h, ca lỡ 9h–15h. Logic hiện tại sẽ hiện QR của ca sáng cho đến khi hết ca, nhân viên ca lỡ không quét được QR. Cho phép admin chọn ca để show QR, ca mặc định được chọn sẽ là ca bắt đầu ứng với thời gian thật.
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Vấn đề: <code>shifts.find(isCurrentShift)</code> chỉ lấy ca <strong>đầu tiên</strong> trong mảng đã sort theo <code>start_time</code>.<br><br>
+              Fix: load <strong>tất cả</strong> ca đang active, fetch QR token song song (<code>Promise.all</code>), thêm state <code>selectedShiftId</code>.<br><br>
+              <strong>Auto-select logic</strong>: trong các ca đang active, chọn ca có <code>start_time</code> muộn nhất mà vẫn ≤ giờ hiện tại → "ca vừa bắt đầu gần nhất".<br>
+              Ví dụ lúc 10:00: Ca sáng (07:00) và Ca lỡ (09:00) đều active → "09:00" muộn hơn "07:00" → chọn Ca lỡ.<br><br>
+              Manual selection: dùng <code>useRef</code> để track trạng thái chọn tay, không bị stale closure trong interval 60s. Khi ca được chọn tay kết thúc → tự fallback về auto-select.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              không hiện hết toàn bộ ra như vậy, nhân viên sẽ biết có bao nhiêu ca. Hãy gộp các ca làm việc thành selectbox hoặc tương tự chỉ để hiện lên 1 lúc 1 ca
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Thay buttons thành <code>&lt;select&gt;</code> dropdown — chỉ hiện tên ca đang chọn, các ca còn lại ẩn trong dropdown. Nhân viên nhìn vào chỉ thấy đúng 1 ca và mã QR.
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar">U</div>
+            <div class="msg-bubble">
+              hãy style cho select box này trọn trịa và đẹp hơn
+            </div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-avatar">AI</div>
+            <div class="msg-bubble">
+              Native <code>&lt;select&gt;</code> rất khó style trên dark background. Thay bằng custom dropdown:<br>
+              <ul>
+                <li><strong>Trigger button</strong> — label "Ca làm việc" nhỏ phía trên, tên ca to phía dưới, <code>ChevronDown</code> icon xoay khi mở</li>
+                <li><strong>Dropdown list</strong> — nền <code>slate-800</code>, bo góc <code>rounded-2xl</code>, shadow đậm</li>
+                <li>Ca đang chọn có dấu <code>✓</code> màu cam, các ca khác màu xám</li>
+                <li>Bấm vào item → đóng dropdown + chọn ca đó</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end chat-section -->
+  </section>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 3. TÍNH NĂNG -->
+  <!-- ─────────────────────────────────────────── -->
+  <section id="features">
+    <div class="section-title">3. Tất cả <span>tính năng</span></div>
+
+    <div class="feature-grid">
+      <div class="feature-group">
+        <h3><span class="icon">🏠</span> Admin – Dashboard</h3>
+        <ul>
+          <li>4 stat cards: tổng NV, có mặt, đi trễ, vắng mặt hôm nay</li>
+          <li>Biểu đồ chuyên cần 7 ngày gần nhất</li>
+          <li>Danh sách đơn chờ xử lý (nghỉ phép, đổi ca)</li>
+          <li>Bảng chấm công mới nhất trong ngày</li>
+          <li>Realtime update qua Supabase</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">👥</span> Admin – Quản lý nhân viên</h3>
+        <ul>
+          <li>Danh sách: search, filter, phân trang</li>
+          <li>Thêm đơn lẻ / Bulk import từ Excel (.xlsx)</li>
+          <li>Export danh sách Excel</li>
+          <li>Chi tiết NV: thông tin, chấm công, nghỉ phép, lương, thưởng/phạt</li>
+          <li>Reset mật khẩu, đổi trạng thái (active/inactive)</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">🗓️</span> Admin – Ca làm việc & Roster</h3>
+        <ul>
+          <li>CRUD ca: tên, giờ bắt đầu/kết thúc, grace period, overnight</li>
+          <li>Gán ca mặc định theo tháng cho từng NV</li>
+          <li>Roster grid: xếp lịch ca từng ngày cho từng NV</li>
+          <li>Copy lịch ca từ tháng trước</li>
+          <li>Override ngày cụ thể (shift_schedules)</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">✅</span> Admin – Chấm công</h3>
+        <ul>
+          <li>Bảng chấm công hàng ngày: filter ca/trạng thái/NV</li>
+          <li>Trạng thái tự động: đúng giờ, trễ, về sớm, OT, vắng, nghỉ phép</li>
+          <li>Chấm công thủ công với lý do bắt buộc</li>
+          <li>Export Excel dữ liệu chấm công</li>
+          <li>Audit log mọi thao tác chỉnh sửa</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">🏖️</span> Admin – Nghỉ phép</h3>
+        <ul>
+          <li>Danh sách đơn theo trạng thái (chờ / đã duyệt / từ chối)</li>
+          <li>Duyệt/từ chối kèm lý do</li>
+          <li>Auto sync attendance + trừ ngày phép khi duyệt</li>
+          <li>Export danh sách đơn Excel</li>
+          <li>Cấu hình policy: số ngày, cộng dồn, advance notice</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">💰</span> Admin – Tính lương</h3>
+        <ul>
+          <li>Edge Function tính lương tháng cho toàn bộ NV</li>
+          <li>Công thức: lương CB × ngày công + OT + phụ cấp + thưởng − phạt − BHXH</li>
+          <li>Bảng lương: xem chi tiết từng khoản, chỉnh sửa thủ công</li>
+          <li>Workflow: draft → confirmed (lock)</li>
+          <li>Export bảng lương Excel đầy đủ breakdown</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">⚙️</span> Admin – Cài đặt (super_admin)</h3>
+        <ul>
+          <li>Cấu hình mức phạt trễ/vắng, điều kiện thưởng chuyên cần</li>
+          <li>Hệ số OT: ngày thường (1.5×), cuối tuần (2×), lễ (3×)</li>
+          <li>Phụ cấp, BHXH (%)</li>
+          <li>Ngày lễ Việt Nam (import lịch)</li>
+          <li>Quản lý chi nhánh (branches)</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">📊</span> Admin – Analytics</h3>
+        <ul>
+          <li>Xếp hạng chuyên cần: ngày công, số lần trễ, tỷ lệ %</li>
+          <li>Phân loại: Xuất sắc / Tốt / Cần cải thiện</li>
+          <li>Biểu đồ quỹ lương theo tháng (line chart)</li>
+          <li>Breakdown chi phí: lương CB, OT, phụ cấp, thưởng</li>
+          <li>Export thống kê Excel</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">📱</span> Employee – Dashboard</h3>
+        <ul>
+          <li>Lời chào + ca làm việc hôm nay</li>
+          <li>Trạng thái check-in hôm nay</li>
+          <li>Salary Preview Card: lương dự kiến tháng hiện tại</li>
+          <li>Thao tác nhanh: check-in, xin nghỉ, đổi ca</li>
+          <li>Thông báo chưa đọc</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">📷</span> Employee – Chấm công QR</h3>
+        <ul>
+          <li>Camera tự bật, quét QR liên tục (BarcodeDetector)</li>
+          <li>Fallback jsQR (canvas) cho iOS Safari / Firefox</li>
+          <li>File input fallback khi không có quyền camera</li>
+          <li>Nhập token thủ công nếu cần</li>
+          <li>Check-in + Check-out, hiện kết quả rõ ràng</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">📋</span> Employee – Nghỉ phép & Đổi ca</h3>
+        <ul>
+          <li>Nộp đơn: chọn loại phép, ngày, lý do</li>
+          <li>Hiển thị số ngày phép còn lại trước khi submit</li>
+          <li>Cảnh báo vượt phép → tự chuyển sang không lương</li>
+          <li>Lịch sử đơn + trạng thái realtime</li>
+          <li>Gửi yêu cầu đổi 1 ngày hoặc cả tuần</li>
+        </ul>
+      </div>
+
+      <div class="feature-group">
+        <h3><span class="icon">🖥️</span> Tablet QR Display</h3>
+        <ul>
+          <li>Trang riêng không cần đăng nhập (<code>/tablet/:branch_id</code>)</li>
+          <li>Hiển thị đồng hồ + QR lớn của ca hiện tại</li>
+          <li>Nhiều ca trùng giờ: dropdown chọn ca, tự chọn ca vừa bắt đầu</li>
+          <li>Auto-refresh mỗi 60 giây</li>
+          <li>Countdown đến hết hạn QR</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 4. CÂY THƯ MỤC -->
+  <!-- ─────────────────────────────────────────── -->
+  <section id="directory">
+    <div class="section-title">4. Cây thư <span>mục</span></div>
+
+    <div class="card" style="margin-bottom:1rem">
+      <h3>Cấu trúc tổng thể</h3>
+      <p>Project theo <strong>feature-based architecture</strong>: mỗi tính năng là 1 folder riêng trong <code>src/features/</code>, chứa <code>pages/</code>, <code>hooks/</code>, <code>components/</code> của tính năng đó. Shared UI ở <code>src/components/</code>.</p>
+    </div>
+
+    <div class="tree">
+<span class="folder">management-app/</span>
+├── <span class="folder">src/</span>                          <span class="comment">← Source code frontend</span>
+│   ├── <span class="file-ts">App.tsx</span>                  <span class="comment">← Root component, QueryClient, Toaster</span>
+│   ├── <span class="file-ts">main.tsx</span>                 <span class="comment">← Entry point, React.StrictMode</span>
+│   ├── <span class="file-ts">router.tsx</span>               <span class="comment">← Tất cả routes + route guards theo role</span>
+│   │
+│   ├── <span class="folder">features/</span>                <span class="comment">← Feature-based modules (mỗi folder = 1 tính năng)</span>
+│   │   ├── <span class="folder">admin/</span>               <span class="comment">← Dashboard admin (stats cards, biểu đồ, danh sách)</span>
+│   │   ├── <span class="folder">attendance/</span>          <span class="comment">← Chấm công: hooks/useAttendance.ts, bảng admin</span>
+│   │   ├── <span class="folder">audit/</span>               <span class="comment">← Lịch sử thao tác admin (audit logs)</span>
+│   │   ├── <span class="folder">auth/</span>                <span class="comment">← LoginPage, form đăng nhập</span>
+│   │   ├── <span class="folder">branches/</span>            <span class="comment">← Quản lý chi nhánh (super_admin)</span>
+│   │   ├── <span class="folder">employee-portal/</span>     <span class="comment">← Toàn bộ Employee Portal</span>
+│   │   │   ├── <span class="folder">pages/</span>
+│   │   │   │   ├── <span class="file-ts">CheckinPage.tsx</span>      <span class="comment">← QR scanner (BarcodeDetector + jsQR)</span>
+│   │   │   │   ├── <span class="file-ts">EmployeeDashboardPage.tsx</span>
+│   │   │   │   ├── <span class="file-ts">AttendanceHistoryPage.tsx</span>
+│   │   │   │   ├── <span class="file-ts">LeavePage.tsx</span>
+│   │   │   │   ├── <span class="file-ts">SalaryPage.tsx</span>
+│   │   │   │   └── <span class="file-ts">ProfilePage.tsx</span>
+│   │   │   └── <span class="folder">hooks/</span>           <span class="comment">← useMyEmployee (lấy hồ sơ NV của user hiện tại)</span>
+│   │   ├── <span class="folder">employees/</span>           <span class="comment">← Admin: danh sách, chi tiết, import, form</span>
+│   │   ├── <span class="folder">leaves/</span>              <span class="comment">← Admin: danh sách đơn, duyệt/từ chối</span>
+│   │   ├── <span class="folder">notifications/</span>       <span class="comment">← Bell icon, dropdown, Supabase Realtime subscribe</span>
+│   │   ├── <span class="folder">payroll/</span>             <span class="comment">← Admin: bảng lương, tính lương, export</span>
+│   │   ├── <span class="folder">roster/</span>              <span class="comment">← Admin: xếp lịch ca calendar grid</span>
+│   │   ├── <span class="folder">settings/</span>            <span class="comment">← Admin: cấu hình lương, phép, OT, ngày lễ</span>
+│   │   ├── <span class="folder">shift-change/</span>        <span class="comment">← Employee gửi / Admin duyệt đổi ca</span>
+│   │   ├── <span class="folder">shifts/</span>              <span class="comment">← Admin CRUD ca làm việc</span>
+│   │   └── <span class="folder">tablet/</span>              <span class="comment">← TabletQRPage: màn hình hiển thị QR tại văn phòng</span>
+│   │
+│   ├── <span class="folder">components/</span>              <span class="comment">← Shared UI components</span>
+│   │   ├── <span class="folder">ui/</span>                  <span class="comment">← shadcn/ui: Button, Input, Dialog, Select... (đừng sửa)</span>
+│   │   ├── <span class="folder">admin/</span>               <span class="comment">← AdminLayout, AdminSidebar, AdminTopbar</span>
+│   │   ├── <span class="folder">shared/</span>              <span class="comment">← NotificationBell, Avatar, EmptyState, StatusBadge...</span>
+│   │   └── <span class="folder">employee/</span>            <span class="comment">← EmployeeLayout, BottomNav (mobile)</span>
+│   │
+│   ├── <span class="folder">layouts/</span>                 <span class="comment">← AdminLayout.tsx, EmployeeLayout.tsx, Sidebar, Topbar</span>
+│   ├── <span class="folder">lib/</span>
+│   │   ├── <span class="file-ts">supabase.ts</span>          <span class="comment">← Supabase client singleton (dùng chung toàn app)</span>
+│   │   ├── <span class="file-ts">auth.ts</span>              <span class="comment">← login(), logout(), createUserWithPhone(), SHA-256</span>
+│   │   ├── <span class="file-ts">export.ts</span>            <span class="comment">← exportToExcel() dùng thư viện xlsx</span>
+│   │   └── <span class="file-ts">utils.ts</span>             <span class="comment">← formatCurrency, formatDate, calcWorkingDays, cn()</span>
+│   ├── <span class="folder">stores/</span>
+│   │   └── <span class="file-ts">authStore.ts</span>         <span class="comment">← Zustand: user, role, activeBranchId, persist localStorage</span>
+│   ├── <span class="folder">hooks/</span>
+│   │   └── <span class="file-ts">useAuth.ts</span>           <span class="comment">← Wrapper đọc authStore, check role</span>
+│   └── <span class="folder">types/</span>
+│       └── <span class="file-ts">database.ts</span>          <span class="comment">← TypeScript types cho mọi bảng Supabase</span>
+│
+├── <span class="folder">supabase/</span>
+│   ├── <span class="folder">functions/</span>               <span class="comment">← Edge Functions (chạy trên Deno runtime)</span>
+│   │   ├── <span class="folder">checkin/</span>             <span class="comment">← Validate QR token + ghi attendance_records</span>
+│   │   ├── <span class="folder">generate-qr/</span>         <span class="comment">← Sinh QR token cho ca hôm nay (gọi bởi pg_cron)</span>
+│   │   ├── <span class="folder">calculate-payroll/</span>   <span class="comment">← Tính lương tháng, lưu payroll_records</span>
+│   │   ├── <span class="folder">salary-preview/</span>      <span class="comment">← Lương dự kiến realtime (không lưu DB)</span>
+│   │   └── <span class="folder">bulk-import/</span>         <span class="comment">← Import nhân viên từ Excel (parse + validate + insert)</span>
+│   └── <span class="folder">migrations/</span>              <span class="comment">← SQL files: schema, RLS policies, pg_cron jobs</span>
+│
+├── <span class="folder">docs/</span>                        <span class="comment">← Tài liệu dự án</span>
+│   ├── <span class="file-other">PLANNING.md</span>              <span class="comment">← Đặc tả tính năng đầy đủ + timeline</span>
+│   ├── <span class="file-other">DATABASE.md</span>              <span class="comment">← Schema, ERD, data flows</span>
+│   ├── <span class="file-other">API.md</span>                   <span class="comment">← Edge Functions API + query patterns</span>
+│   ├── <span class="file-other">DESIGN.md</span>                <span class="comment">← Design system, UX patterns</span>
+│   ├── <span class="file-other">VALIDATIONS.md</span>           <span class="comment">← Business rules validation</span>
+│   ├── <span class="folder">handoff/</span>                 <span class="comment">← Phase handoff documents (PHASE_1..12_HANDOFF.md)</span>
+│   ├── <span class="folder">test/</span>                    <span class="comment">← Manual test cases (TESTING_PHASE_X.md)</span>
+│   └── <span class="folder">fix_bugs_report/</span>         <span class="comment">← Bug fix logs sau mỗi QC round</span>
+│
+├── <span class="folder">rules/</span>                       <span class="comment">← Coding rules bắt buộc</span>
+│   ├── <span class="file-other">code-style.md</span>            <span class="comment">← TypeScript, naming, imports</span>
+│   ├── <span class="file-other">security.md</span>              <span class="comment">← RLS, keys, auth, input validation</span>
+│   └── <span class="file-other">supabase-patterns.md</span>     <span class="comment">← Query patterns, realtime, migration</span>
+│
+├── <span class="file-other">CLAUDE.md</span>                    <span class="comment">← Context cho AI coding assistant</span>
+├── <span class="file-other">vercel.json</span>                  <span class="comment">← SPA rewrites (mọi route → index.html)</span>
+└── <span class="file-other">package.json</span>                 <span class="comment">← Dependencies: React, Supabase, TanStack Query, Zustand...</span>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────── -->
+  <!-- 5. BÀI TẬP AI -->
+  <!-- ─────────────────────────────────────────── -->
+  <section id="exercise">
+    <div class="section-title">5. Bài tập <span>thực hành AI</span></div>
+
+    <div class="exercise-header">
+      <h2>🎯 Luồng: QR Check-in End-to-End</h2>
+      <p>Tái hiện lại luồng chấm công QR từ đầu đến cuối — một trong những tính năng phức tạp và thú vị nhất của app, chạm đủ các tầng: Frontend → Edge Function → Database → Realtime.</p>
+      <div class="ex-meta">
+        <span class="ex-chip">⏱ ~4–6 giờ</span>
+        <span class="ex-chip">🧩 3 components</span>
+        <span class="ex-chip">⚡ 2 Edge Functions</span>
+        <span class="ex-chip">🗄 4 database tables</span>
+        <span class="ex-chip">📱 Mobile-first UI</span>
+      </div>
+    </div>
+
+    <!-- OVERVIEW FLOW -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <h3 style="margin-bottom:1rem">Tổng quan luồng dữ liệu</h3>
+      <div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:1.25rem;font-family:monospace;font-size:.82rem;line-height:2;overflow-x:auto">
+        <strong style="color:var(--orange)">pg_cron</strong> (06:30 VN mỗi ngày)<br>
+        &nbsp;&nbsp;&nbsp;↓ gọi<br>
+        <strong style="color:var(--blue)">Edge Function: generate-qr</strong><br>
+        &nbsp;&nbsp;&nbsp;↓ upsert token UUID vào<br>
+        <strong style="color:var(--green)">DB: qr_tokens</strong> (shift_id, date, token, expires_at)<br>
+        &nbsp;&nbsp;&nbsp;↓ Tablet đọc token, render<br>
+        <strong style="color:var(--orange)">TabletQRPage</strong> — hiển thị QR lớn (<code>react-qr-code</code>)<br>
+        &nbsp;&nbsp;&nbsp;↓ NV quét bằng điện thoại (URL: <code>/checkin?token=UUID</code>)<br>
+        <strong style="color:var(--orange)">CheckinPage</strong> — camera scan → parse token → confirm screen<br>
+        &nbsp;&nbsp;&nbsp;↓ gọi<br>
+        <strong style="color:var(--blue)">Edge Function: checkin</strong><br>
+        &nbsp;&nbsp;&nbsp;↓ validate: token hợp lệ? NV thuộc ca này? Đã check-in chưa?<br>
+        &nbsp;&nbsp;&nbsp;↓ tính trễ: now > (shift.start_time + grace_period)?<br>
+        &nbsp;&nbsp;&nbsp;↓ upsert vào<br>
+        <strong style="color:var(--green)">DB: attendance_records</strong> (check_in_at, status, late_minutes)<br>
+        &nbsp;&nbsp;&nbsp;↓ insert vào<br>
+        <strong style="color:var(--green)">DB: notifications</strong> → Supabase Realtime → NV nhận ngay
+      </div>
+    </div>
+
+    <!-- STEP BY STEP FLOW -->
+    <div class="flow-diagram">
+      <h3 style="margin-bottom:1.25rem;font-size:1rem">Chi tiết từng bước</h3>
+
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>pg_cron sinh QR mỗi sáng</h4>
+          <p>Job SQL chạy lúc <code>30 23 * * *</code> UTC (= 06:30 VN). Gọi Edge Function <code>generate-qr</code> với <code>{"run_all": true}</code>.</p>
+          <ul>
+            <li>Đọc tất cả ca active từ bảng <code>shifts</code></li>
+            <li>Tính <code>dateStr</code> theo VN timezone (+7h vào UTC)</li>
+            <li>Tính <code>expires_at = end_time+07:00</code> của ca đó</li>
+            <li>Upsert vào <code>qr_tokens</code> với constraint <code>UNIQUE(shift_id, date)</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Tablet hiển thị QR</h4>
+          <p>Trang <span class="file-ref">src/features/tablet/pages/TabletQRPage.tsx</span> — không cần đăng nhập, URL <code>/tablet/:branch_id</code>.</p>
+          <ul>
+            <li>Load tất cả ca đang active (<code>isCurrentShift()</code>)</li>
+            <li>Nếu nhiều ca trùng giờ → dropdown chọn ca, auto-select ca vừa bắt đầu gần nhất</li>
+            <li>Fetch token từ <code>qr_tokens</code> theo <code>shift_id + date + is_active</code></li>
+            <li>Render <code>&lt;QRCode value="https://app.com/checkin?token=UUID" /&gt;</code></li>
+            <li>Refresh mỗi 60s, đếm ngược thời gian hết hạn</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Nhân viên quét QR bằng điện thoại</h4>
+          <p>Trang <span class="file-ref">src/features/employee-portal/pages/CheckinPage.tsx</span> — cần đăng nhập, mobile-first.</p>
+          <ul>
+            <li><strong>BarcodeDetector API</strong> (Chrome Android/Desktop) — scan liên tục không cần chụp</li>
+            <li><strong>jsQR</strong> (canvas fallback) — iOS Safari, Firefox</li>
+            <li><strong>File input</strong> <code>capture="environment"</code> — khi <code>getUserMedia</code> bị từ chối</li>
+            <li>Parse URL từ QR data để extract token UUID</li>
+            <li>Hiển thị màn hình confirm: tên ca, token snippet, nút "Xác nhận Check-in"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <h4>Edge Function validate & ghi attendance</h4>
+          <p>File <span class="file-ref">supabase/functions/checkin/index.ts</span> — chạy trên Deno, dùng service role key.</p>
+          <ul>
+            <li><strong>ATT-01:</strong> Lookup token → token tồn tại? <code>is_active = true</code>? <code>expires_at &gt; now</code>?</li>
+            <li><strong>ATT-02:</strong> Xác định ca NV hôm nay: ưu tiên <code>shift_schedules</code>, fallback <code>employee_shift_assignments</code>. So sánh với <code>qrToken.shift_id</code></li>
+            <li><strong>ATT-03:</strong> Đã check-in ca này rồi? → báo lỗi</li>
+            <li><strong>ATT-05:</strong> Tính trễ: <code>now &gt; (shift.start_time + grace_period_minutes)</code></li>
+            <li>Upsert <code>attendance_records</code> với <code>UNIQUE(employee_id, date, shift_id)</code></li>
+            <li>Insert <code>notifications</code> → Supabase Realtime push ngay cho NV</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-content">
+          <h4>Kết quả hiển thị cho nhân viên</h4>
+          <ul>
+            <li>✅ <strong>Thành công:</strong> "Check-in thành công lúc 07:02 – Đúng giờ ✓"</li>
+            <li>⚠️ <strong>Đi trễ:</strong> "Check-in thành công lúc 07:45 – Đi trễ 45 phút"</li>
+            <li>❌ <strong>Lỗi:</strong> "Bạn không thuộc ca làm việc này" / "Mã QR đã hết hạn"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- EXERCISE TASKS -->
+    <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1.25rem;color:var(--slate-900)">
+      📝 Hướng dẫn bài tập thực hành
+    </h3>
+
+    <div class="callout info">
+      <span class="icon">💡</span>
+      <div class="text">
+        Bài tập này yêu cầu bạn dùng AI (Claude, ChatGPT, Cursor...) để tái tạo lại từng phần của luồng QR Check-in.
+        Mỗi task có <strong>gợi ý prompt</strong> để bạn hỏi AI. Không nhất thiết phải kết nối Supabase thật — có thể dùng mock data.
+      </div>
+    </div>
+
+    <div style="height:1rem"></div>
+
+    <div class="task-list">
+
+      <div class="task-item">
+        <h4>Task 1 — Thiết kế schema Database</h4>
+        <p>Viết SQL để tạo 4 bảng cần thiết: <code>shifts</code>, <code>qr_tokens</code>, <code>attendance_records</code>, <code>employee_shift_assignments</code>. Bao gồm constraints, indexes và UNIQUE keys.</p>
+        <div class="hint">💬 Prompt gợi ý: "Thiết kế SQL schema cho hệ thống chấm công QR. Cần bảng shifts (ca làm việc), qr_tokens (token mỗi ca mỗi ngày), attendance_records (bản ghi chấm công). Dùng UUID primary keys, timestamps với timezone. Thêm UNIQUE constraint cho (shift_id, date) trên qr_tokens và (employee_id, date, shift_id) trên attendance_records."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 2 — Edge Function: generate-qr</h4>
+        <p>Viết Deno Edge Function nhận <code>{"run_all": true}</code>, load tất cả ca active, tính <code>expires_at</code> đúng timezone Vietnam (UTC+7), upsert tokens vào database.</p>
+        <div class="hint">💬 Prompt gợi ý: "Viết Deno Edge Function để sinh QR token cho các ca làm việc. Đọc bảng shifts từ Supabase, tính expires_at theo múi giờ Vietnam (UTC+7), sinh UUID token cho mỗi ca, upsert vào bảng qr_tokens. Lưu ý: server chạy UTC, cần cộng +7h khi tính ngày Vietnam."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 3 — Tablet QR Display Component</h4>
+        <p>Tạo React component hiển thị: đồng hồ realtime, QR code lớn của ca hiện tại, dropdown chọn ca khi có nhiều ca trùng giờ, đếm ngược hết hạn. Auto-refresh mỗi 60 giây.</p>
+        <div class="hint">💬 Prompt gợi ý: "Tạo React component TabletQRDisplay. Hiển thị đồng hồ HH:mm:ss realtime. Load tất cả ca đang active từ API, filter theo giờ hiện tại. Nếu có nhiều ca trùng giờ, dùng &lt;select&gt; dropdown để chọn, mặc định chọn ca có start_time muộn nhất. Render QR code bằng thư viện react-qr-code với URL checkin."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 4 — Camera QR Scanner (Mobile)</h4>
+        <p>Tạo React component scanner với 3 tầng fallback: BarcodeDetector API → jsQR canvas loop → file input <code>capture="environment"</code>. Handle permissions, tự dừng camera khi rời trang.</p>
+        <div class="hint">💬 Prompt gợi ý: "Tạo React QR scanner component cho mobile. Strategy: thử BarcodeDetector API trước (Chrome Android), nếu không có thì dùng jsQR với canvas, nếu getUserMedia bị từ chối thì fallback sang &lt;input type='file' capture='environment'&gt;. Dùng useRef để giữ stream, cleanup trong useEffect. Emit onDetected(token) khi tìm thấy QR."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 5 — Edge Function: checkin (Validation Logic)</h4>
+        <p>Viết Edge Function validate QR token đầy đủ: kiểm tra token tồn tại và chưa hết hạn, xác minh NV thuộc ca này (lookup shift_schedules → fallback employee_shift_assignments), tính số phút trễ, ghi attendance_records.</p>
+        <div class="hint">💬 Prompt gợi ý: "Viết Deno Edge Function xử lý check-in QR. Input: {token, employee_id, type}. Validate: (1) token tồn tại và expires_at &gt; now, (2) tìm ca của NV hôm nay: ưu tiên shift_schedules theo date, fallback employee_shift_assignments theo month/year, so sánh với token.shift_id, (3) chưa check-in ca này. Tính late_minutes = now - (shift.start_time + grace_period). Upsert attendance_records."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 6 — Confirm Screen + Error Handling</h4>
+        <p>Sau khi quét được token, hiển thị confirm screen (tên ca, loại check-in/out). Gọi API submit. Xử lý các trường hợp lỗi với message rõ ràng: sai ca, hết hạn, đã check-in, lỗi mạng.</p>
+        <div class="hint">💬 Prompt gợi ý: "Tạo màn hình xác nhận check-in sau khi quét QR. Hiển thị: tên ca, giờ ca, toggle check-in/check-out. Khi submit, call API và handle: success → hiện thông báo 'Check-in lúc HH:mm – Đúng giờ ✓' hoặc 'Đi trễ X phút', error → hiện message cụ thể từ API (không hiện raw error). Dùng React loading states."</div>
+      </div>
+
+      <div class="task-item">
+        <h4>Task 7 (Nâng cao) — Realtime Notification</h4>
+        <p>Sau khi check-in thành công, Edge Function insert notification vào DB. Client subscribe Supabase Realtime channel theo user_id để nhận ngay. Hiển thị bell icon với badge số chưa đọc.</p>
+        <div class="hint">💬 Prompt gợi ý: "Tích hợp Supabase Realtime notifications. Server: sau khi ghi attendance, insert vào bảng notifications (user_id, type, title, body). Client: dùng supabase.channel('notifications:USER_ID').on('postgres_changes', ...) để listen. Cập nhật badge count trên bell icon. Mark as read khi click."</div>
+      </div>
+
+    </div>
+
+    <hr />
+
+    <!-- KEY CONCEPTS -->
+    <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1.25rem;color:var(--slate-900)">
+      🧠 Concepts cần nắm
+    </h3>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Timezone Vietnam (UTC+7)</h3>
+        <p style="margin-bottom:.5rem">Server Edge Function chạy UTC. Phải cộng +7h khi tính ngày VN:</p>
+        <div class="code-block"><span class="kw">const</span> vnDate = <span class="kw">new</span> <span class="fn">Date</span>(<span class="fn">Date</span>.now() + <span class="num">7</span> * <span class="num">3600000</span>)
+  .<span class="fn">toISOString</span>().<span class="fn">split</span>(<span class="str">'T'</span>)[<span class="num">0</span>]
+<span class="cm">// expires_at đúng timezone:</span>
+<span class="kw">new</span> <span class="fn">Date</span>(<span class="str">`2025-05-22T15:00:00+07:00`</span>)</div>
+      </div>
+
+      <div class="card">
+        <h3>PostgreSQL TIME format</h3>
+        <p style="margin-bottom:.5rem">Cột <code>TIME</code> trả về <code>"09:00:00"</code> (có giây). Nếu append thêm <code>:00</code> sẽ thành <code>"09:00:00:00"</code> = Invalid Date.</p>
+        <div class="code-block"><span class="cm">// ❌ Sai</span>
+<span class="kw">new</span> <span class="fn">Date</span>(<span class="str">`2025-05-22T</span>${shift.start_time}<span class="str">:00`</span>)
+<span class="cm">// ✅ Đúng</span>
+<span class="kw">const</span> hhmm = shift.start_time.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">5</span>)
+<span class="kw">new</span> <span class="fn">Date</span>(<span class="str">`2025-05-22T</span>${hhmm}<span class="str">:00+07:00`</span>)</div>
+      </div>
+
+      <div class="card">
+        <h3>Ca lookup priority</h3>
+        <p style="margin-bottom:.5rem">Khi cần biết ca của NV ngày X:</p>
+        <div class="code-block"><span class="cm">// 1. Override cụ thể theo ngày</span>
+shift_schedules
+  .<span class="fn">eq</span>(<span class="str">'employee_id'</span>, empId)
+  .<span class="fn">eq</span>(<span class="str">'date'</span>, dateStr)
+
+<span class="cm">// 2. Fallback: ca tháng mặc định</span>
+employee_shift_assignments
+  .<span class="fn">eq</span>(<span class="str">'employee_id'</span>, empId)
+  .<span class="fn">eq</span>(<span class="str">'month'</span>, month)
+  .<span class="fn">eq</span>(<span class="str">'year'</span>, year)</div>
+      </div>
+
+      <div class="card">
+        <h3>BarcodeDetector + jsQR fallback</h3>
+        <p style="margin-bottom:.5rem">Strategy ưu tiên theo browser:</p>
+        <div class="code-block"><span class="kw">if</span> (<span class="str">'BarcodeDetector'</span> <span class="kw">in</span> window) {
+  <span class="cm">// Chrome Android, Desktop Chrome/Edge</span>
+  detector.<span class="fn">detect</span>(videoElement)
+} <span class="kw">else</span> {
+  <span class="cm">// iOS Safari, Firefox — jsQR canvas loop</span>
+  ctx.<span class="fn">drawImage</span>(video, <span class="num">0</span>, <span class="num">0</span>)
+  <span class="fn">jsQR</span>(imageData.data, w, h)
+}</div>
+      </div>
+    </div>
+
+    <div class="callout success" style="margin-top:1.5rem">
+      <span class="icon">✅</span>
+      <div class="text">
+        <strong>Hoàn thành tốt khi:</strong> Nhân viên có thể mở điện thoại, quét QR trên tablet, thấy thông báo check-in thành công (hoặc lỗi rõ ràng) trong vòng &lt;3 giây. Admin thấy bản ghi chấm công ngay trong bảng attendance.
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:.75rem">
+      <span class="icon">⚠️</span>
+      <div class="text">
+        <strong>Edge cases cần test:</strong> Quét QR của ca khác → báo lỗi đúng. Quét 2 lần cùng ca → báo đã check-in. Quét sau giờ kết ca → báo hết hạn. QR chưa được sinh → màn hình chờ (không crash).
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+  // Smooth scroll for nav links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Chat tab switcher
+  const chatMap = {
+    setup:       'chat-setup',
+    qr:          'chat-qr',
+    'bug-camera':'chat-bug-camera',
+    'bug-tz':    'chat-bug-tz',
+    payroll:     'chat-payroll',
+    refactor:    'chat-refactor',
+  };
+
+  function switchChat(key) {
+    // Hide all windows
+    Object.values(chatMap).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('chat-hidden');
+    });
+    // Show selected
+    const target = document.getElementById(chatMap[key]);
+    if (target) target.classList.remove('chat-hidden');
+    // Update tab styles
+    document.querySelectorAll('.chat-tab').forEach(tab => tab.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>
