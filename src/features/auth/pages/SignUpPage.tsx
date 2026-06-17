@@ -4,38 +4,43 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Loader2, Phone, Lock, LogIn } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Phone, Lock, User, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { loginWithPhone } from '@/lib/auth'
-import { useAuthStore } from '@/stores/authStore'
+import { signUp } from '@/lib/auth'
 
-const loginSchema = z.object({
-  phone: z.string().min(10, 'Invalid phone number').max(11),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
+const signUpSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    phone: z.string().min(10, 'Invalid phone number').max(11),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
-type LoginForm = z.infer<typeof loginSchema>
+type SignUpForm = z.infer<typeof signUpSchema>
 
-export function LoginPage() {
+export function SignUpPage() {
   const navigate = useNavigate()
-  const setUser = useAuthStore((s) => s.setUser)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) })
+  } = useForm<SignUpForm>({ resolver: zodResolver(signUpSchema) })
 
-  const onSubmit = async (values: LoginForm) => {
+  const onSubmit = async (values: SignUpForm) => {
     try {
-      const user = await loginWithPhone(values.phone, values.password)
-      setUser(user)
-      const to = user.role === 'employee' ? '/' : '/admin'
-      navigate(to, { replace: true })
-    } catch {
-      toast.error('Invalid phone number or password')
+      await signUp(values.name, values.phone, values.password)
+      toast.success('Account created successfully. Please sign in.')
+      navigate('/login', { replace: true })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create account')
     }
   }
 
@@ -52,16 +57,31 @@ export function LoginPage() {
             <span className="text-3xl font-bold text-primary-foreground">H</span>
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">HRM System</h1>
-          <p className="text-slate-500 text-base mt-1">Human Resource Management</p>
+          <p className="text-slate-500 text-base mt-1">Create your account</p>
         </div>
 
         <div className="bg-card rounded-xl border border-[#e0c0b1] p-8 md:p-10 shadow-[0_4px_12px_rgba(15,23,42,0.05),0_1px_3px_rgba(15,23,42,0.1)]">
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Sign in</h2>
-            <p className="text-sm text-slate-500">Enter your phone number and password</p>
+            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Sign up</h2>
+            <p className="text-sm text-slate-500">Fill in your details to get started</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-semibold tracking-wider text-slate-900">Full Name</label>
+              <div className="relative group">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary pointer-events-none transition-colors" />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Nguyen Van A"
+                  className="pl-10 py-3 bg-slate-50 border-[#e0c0b1] rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  {...register('name')}
+                />
+              </div>
+              {errors.name && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.name.message}</p>}
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="phone" className="block text-sm font-semibold tracking-wider text-slate-900">Phone Number</label>
               <div className="relative group">
@@ -78,12 +98,7 @@ export function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-semibold tracking-wider text-slate-900">Password</label>
-                <a href="#" className="text-xs font-semibold text-primary hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+              <label htmlFor="password" className="block text-sm font-semibold tracking-wider text-slate-900">Password</label>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary pointer-events-none transition-colors" />
                 <Input
@@ -104,15 +119,26 @@ export function LoginPage() {
               {errors.password && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.password.message}</p>}
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                id="remember"
-                type="checkbox"
-                className="h-4 w-4 rounded border-[#e0c0b1] text-primary focus:ring-primary/20 cursor-pointer"
-              />
-              <label htmlFor="remember" className="text-sm text-slate-500 font-normal cursor-pointer select-none">
-                Remember me
-              </label>
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold tracking-wider text-slate-900">Confirm Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary pointer-events-none transition-colors" />
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className="pl-10 pr-12 py-3 bg-slate-50 border-[#e0c0b1] rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  {...register('confirmPassword')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.confirmPassword.message}</p>}
             </div>
 
             <Button
@@ -124,8 +150,8 @@ export function LoginPage() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  Sign in
-                  <LogIn className="h-4 w-4 ml-2" />
+                  Sign up
+                  <UserPlus className="h-4 w-4 ml-2" />
                 </>
               )}
             </Button>
@@ -133,10 +159,8 @@ export function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-[#e0c0b1] text-center">
             <p className="text-sm text-slate-500">
-              Don't have an account?{' '}
-              <Link to="/signup" className="font-semibold text-primary hover:underline">Sign up</Link>
-              {' or '}
-              <a href="#" className="font-semibold text-primary hover:underline">Contact Admin</a>
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
             </p>
           </div>
         </div>

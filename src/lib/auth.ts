@@ -55,6 +55,35 @@ export async function createUserWithPhone(
   return data.id as string
 }
 
+export async function signUp(name: string, phone: string, password: string): Promise<AuthUser> {
+  const { data: branch } = await supabase
+    .from('branches')
+    .select('id')
+    .limit(1)
+    .single()
+
+  if (!branch) throw new Error('No branch found. Contact admin.')
+
+  const userId = await createUserWithPhone(phone, password, 'employee', branch.id)
+
+  const { error: empError } = await supabase.from('employees').insert({
+    user_id: userId,
+    branch_id: branch.id,
+    full_name: name.trim(),
+    phone: phone.trim(),
+    type: 'fulltime',
+    base_salary: 0,
+    status: 'probation',
+  })
+
+  if (empError) {
+    await supabase.from('users').delete().eq('id', userId)
+    throw new Error(empError.message)
+  }
+
+  return { id: userId, role: 'employee', branch_id: branch.id, phone: phone.trim() }
+}
+
 export async function changePassword(userId: string, newPassword: string): Promise<void> {
   const hash = await hashPassword(newPassword)
   const { error } = await supabase
