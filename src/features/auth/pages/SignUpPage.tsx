@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { signUp } from '@/lib/auth'
-import { useAuthStore } from '@/stores/authStore'
 import { useBranches } from '@/features/branches/hooks/useBranches'
 
 const signUpSchema = z
@@ -35,7 +34,6 @@ type SignUpForm = z.infer<typeof signUpSchema>
 
 export function SignUpPage() {
   const navigate = useNavigate()
-  const setUser = useAuthStore((s) => s.setUser)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { data: branches, isLoading: branchesLoading } = useBranches()
@@ -52,15 +50,14 @@ export function SignUpPage() {
 
   const onSubmit = async (values: SignUpForm) => {
     try {
-      const user = await signUp({
+      await signUp({
         fullName: values.fullName,
         phone: values.phone,
         password: values.password,
         branchId: values.branchId,
       })
-      setUser(user)
       toast.success('Account created successfully')
-      navigate(user.role === 'employee' ? '/' : '/admin', { replace: true })
+      navigate('/login', { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account')
     }
