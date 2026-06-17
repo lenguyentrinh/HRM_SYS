@@ -37,14 +37,14 @@ serve(async (req) => {
 
     if (!qrToken || !qrToken.is_active) {
       return new Response(
-        JSON.stringify({ success: false, error: 'invalid_token', message: 'Mã QR không hợp lệ' }),
+        JSON.stringify({ success: false, error: 'invalid_token', message: 'Invalid or expired QR code' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     if (new Date(qrToken.expires_at) < now) {
       return new Response(
-        JSON.stringify({ success: false, error: 'expired_token', message: 'Mã QR đã hết hạn hoặc không hợp lệ' }),
+        JSON.stringify({ success: false, error: 'expired_token', message: 'QR code has expired' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -81,7 +81,7 @@ serve(async (req) => {
 
     if (!assignedShiftId || assignedShiftId !== shiftId) {
       return new Response(
-        JSON.stringify({ success: false, error: 'wrong_shift', message: 'Bạn không thuộc ca làm việc này' }),
+        JSON.stringify({ success: false, error: 'wrong_shift', message: 'You are not assigned to this shift' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -97,14 +97,14 @@ serve(async (req) => {
 
     if (type === 'check_in' && existing?.check_in_at) {
       return new Response(
-        JSON.stringify({ success: false, error: 'already_checked_in', message: 'Bạn đã check-in ca này rồi' }),
+        JSON.stringify({ success: false, error: 'already_checked_in', message: 'You have already checked in for this shift' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     if (type === 'check_out' && !existing?.check_in_at) {
       return new Response(
-        JSON.stringify({ success: false, error: 'not_checked_in', message: 'Bạn chưa check-in ca này' }),
+        JSON.stringify({ success: false, error: 'not_checked_in', message: 'You have not checked in for this shift yet' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -112,7 +112,7 @@ serve(async (req) => {
     // ATT-04: check_out must be after check_in
     if (type === 'check_out' && existing?.check_in_at && now < new Date(existing.check_in_at)) {
       return new Response(
-        JSON.stringify({ success: false, error: 'invalid_checkout', message: 'Thời gian check-out không hợp lệ' }),
+        JSON.stringify({ success: false, error: 'invalid_checkout', message: 'Check-out time is invalid' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -156,8 +156,8 @@ serve(async (req) => {
       }
 
       message = isLate
-        ? `Check-in thành công lúc ${timeStr} – Đi trễ ${lateMinutes} phút`
-        : `Check-in thành công lúc ${timeStr} – Đúng giờ ✓`
+        ? `Check-in successful at ${timeStr} – ${lateMinutes} min late`
+        : `Check-in successful at ${timeStr} – On time ✓`
     } else {
       // ATT-06, ATT-07: calculate early leave and OT
       const endHHMM = shift.end_time.slice(0, 5)
@@ -181,10 +181,10 @@ serve(async (req) => {
       }
 
       message = overtimeMinutes > 0
-        ? `Check-out thành công lúc ${timeStr} – OT ${overtimeMinutes} phút`
+        ? `Check-out successful at ${timeStr} – OT ${overtimeMinutes} min`
         : earlyLeaveMinutes > 0
-        ? `Check-out thành công lúc ${timeStr} – Về sớm ${earlyLeaveMinutes} phút`
-        : `Check-out thành công lúc ${timeStr} ✓`
+        ? `Check-out successful at ${timeStr} – Early leave ${earlyLeaveMinutes} min`
+        : `Check-out successful at ${timeStr} ✓`
     }
 
     if (type === 'check_in') {

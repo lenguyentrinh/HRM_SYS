@@ -37,7 +37,7 @@ serve(async (req) => {
     const { data: confirmedRecords } = await confirmedCheck
     if (confirmedRecords && confirmedRecords.length > 0) {
       return new Response(
-        JSON.stringify({ error: 'Bảng lương tháng này đã được xác nhận. Liên hệ Super Admin để mở khóa.' }),
+        JSON.stringify({ error: 'Payroll for this month has been confirmed. Contact Super Admin to unlock.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -56,7 +56,7 @@ serve(async (req) => {
     if (cfgErr) throw cfgErr
     if (!config) {
       return new Response(
-        JSON.stringify({ error: 'Chưa có cấu hình lương cho chi nhánh này.' }),
+        JSON.stringify({ error: 'No payroll configuration found for this branch.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }

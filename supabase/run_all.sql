@@ -377,11 +377,11 @@ END $$;
 
 -- Step 1: create branch
 INSERT INTO public.branches (id, name, address)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Chi nhÃ¡nh chÃ­nh', 'Äá»‹a chá»‰ cÃ´ng ty')
+VALUES ('00000000-0000-0000-0000-000000000001', 'Main Branch', 'Company Address')
 ON CONFLICT DO NOTHING;
 
 -- Step 2: create super_admin
--- password '123456' â†’ SHA-256: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+-- password '123456' -> SHA-256: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
 INSERT INTO public.users (id, branch_id, phone, password_hash, role)
 VALUES (
   '00000000-0000-0000-0000-000000000002',

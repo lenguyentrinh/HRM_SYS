@@ -7,17 +7,17 @@ import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
 const navItems = [
-  { to: '/admin', label: 'Tổng quan', icon: LayoutDashboard, end: true },
-  { to: '/admin/employees', label: 'Nhân viên', icon: Users },
-  { to: '/admin/attendance', label: 'Chấm công', icon: Clock },
-  { to: '/admin/roster', label: 'Lịch ca', icon: CalendarDays },
-  { to: '/admin/leaves', label: 'Nghỉ phép', icon: Calendar },
-  { to: '/admin/shift-changes', label: 'Đổi ca', icon: RefreshCw },
-  { to: '/admin/shifts', label: 'Quản lý ca', icon: FileText },
-  { to: '/admin/payroll', label: 'Tính lương', icon: DollarSign },
-  { to: '/admin/analytics', label: 'Báo cáo', icon: BarChart3 },
-  { to: '/admin/audit', label: 'Nhật ký', icon: ClipboardList },
-  { to: '/admin/settings', label: 'Cài đặt', icon: Settings },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/employees', label: 'Employees', icon: Users },
+  { to: '/admin/attendance', label: 'Attendance', icon: Clock },
+  { to: '/admin/roster', label: 'Schedule', icon: CalendarDays },
+  { to: '/admin/leaves', label: 'Leave', icon: Calendar },
+  { to: '/admin/shift-changes', label: 'Shift Change', icon: RefreshCw },
+  { to: '/admin/shifts', label: 'Shift Config', icon: FileText },
+  { to: '/admin/payroll', label: 'Payroll', icon: DollarSign },
+  { to: '/admin/analytics', label: 'Reports', icon: BarChart3 },
+  { to: '/admin/audit', label: 'Audit Log', icon: ClipboardList },
+  { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 export function AdminSidebar() {
@@ -51,7 +51,7 @@ export function AdminSidebar() {
               }
             >
               <Building2 className="h-4 w-4 flex-shrink-0" />
-              Chi nhánh
+              Branches
             </NavLink>
             <div className="my-1 mx-3 border-t border-slate-100" />
           </>
@@ -86,7 +86,7 @@ export function AdminSidebar() {
             className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
           >
             <Tablet className="h-4 w-4 flex-shrink-0" />
-            Màn hình tablet
+            Tablet View
           </a>
         </div>
       )}

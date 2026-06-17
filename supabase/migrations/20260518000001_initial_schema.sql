@@ -377,7 +377,7 @@ END $$;
 
 -- Step 1: create branch
 INSERT INTO public.branches (id, name, address)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Chi nhánh chính', 'Địa chỉ công ty')
+VALUES ('00000000-0000-0000-0000-000000000001', 'Main Branch', 'Company Address')
 ON CONFLICT DO NOTHING;
 
 -- Step 2: create super_admin

@@ -39,24 +39,24 @@ function parseCSV(csv: string): EmployeeRow[] {
     header.forEach((h, i) => { row[h] = values[i] ?? '' })
 
     return {
-      full_name: row['ho_ten'] ?? row['full_name'] ?? '',
-      phone: row['sdt'] ?? row['phone'] ?? '',
-      type: (row['loai'] ?? row['type'] ?? 'fulltime') as 'fulltime' | 'parttime',
-      department: row['phong_ban'] ?? row['department'] ?? undefined,
-      position: row['chuc_vu'] ?? row['position'] ?? undefined,
-      base_salary: Number(row['luong_cb'] ?? row['base_salary'] ?? 0),
-      allowance: Number(row['phu_cap'] ?? row['allowance'] ?? 0),
-      join_date: row['ngay_vao'] ?? row['join_date'] ?? new Date().toISOString().split('T')[0],
+      full_name: row['full_name'] ?? '',
+      phone: row['phone'] ?? '',
+      type: (row['type'] ?? 'fulltime') as 'fulltime' | 'parttime',
+      department: row['department'] ?? undefined,
+      position: row['position'] ?? undefined,
+      base_salary: Number(row['base_salary'] ?? 0),
+      allowance: Number(row['allowance'] ?? 0),
+      join_date: row['join_date'] ?? new Date().toISOString().split('T')[0],
     }
   })
 }
 
 function validateRow(row: EmployeeRow, idx: number): string | null {
-  if (!row.full_name) return `Hàng ${idx + 2}: Thiếu họ tên`
-  if (!row.phone || !/^0\d{9}$/.test(row.phone)) return `Hàng ${idx + 2}: SĐT không hợp lệ (${row.phone})`
-  if (!['fulltime', 'parttime'].includes(row.type)) return `Hàng ${idx + 2}: Loại nhân viên phải là fulltime hoặc parttime`
-  if (row.base_salary < 0) return `Hàng ${idx + 2}: Lương cơ bản không hợp lệ`
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(row.join_date)) return `Hàng ${idx + 2}: Ngày vào phải định dạng YYYY-MM-DD`
+  if (!row.full_name) return `Row ${idx + 2}: Missing full name`
+  if (!row.phone || !/^0\d{9}$/.test(row.phone)) return `Row ${idx + 2}: Invalid phone number (${row.phone})`
+  if (!['fulltime', 'parttime'].includes(row.type)) return `Row ${idx + 2}: Employee type must be fulltime or parttime`
+  if (row.base_salary < 0) return `Row ${idx + 2}: Invalid base salary`
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(row.join_date)) return `Row ${idx + 2}: Join date must be YYYY-MM-DD format`
   return null
 }
 
@@ -93,7 +93,7 @@ serve(async (req) => {
     const rows = parseCSV(csv_content)
     if (!rows.length) {
       return new Response(
-        JSON.stringify({ error: 'Không tìm thấy dữ liệu trong file CSV' }),
+        JSON.stringify({ error: 'No data found in CSV file' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -123,7 +123,7 @@ serve(async (req) => {
     if (duplicates.length) {
       return new Response(
         JSON.stringify({
-          errors: [`SĐT đã tồn tại trong hệ thống: ${duplicates.join(', ')}`],
+          errors: [`Phone number already exists in the system: ${duplicates.join(', ')}`],
           success: 0,
         }),
         { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -29,12 +29,12 @@ function BranchSwitcher() {
         className="flex items-center gap-2 h-8 px-3 rounded-md text-sm text-slate-600 hover:bg-slate-100 transition-colors border border-slate-200"
       >
         <Building2 className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-        <span className="truncate max-w-36">{activeBranch?.name ?? 'Chọn chi nhánh'}</span>
+        <span className="truncate max-w-36">{activeBranch?.name ?? 'Select branch'}</span>
         <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
       </button>
       {open && (
         <div className="absolute left-0 top-10 w-56 bg-white rounded-xl border border-slate-200 shadow-lg py-2 z-50">
-          <div className="px-4 py-1.5 text-xs text-slate-400 font-medium">Chuyển chi nhánh</div>
+          <div className="px-4 py-1.5 text-xs text-slate-400 font-medium">Switch branch</div>
           <div className="border-t border-slate-100 my-1" />
           {activeBranches.map((branch) => (
             <button
@@ -108,7 +108,7 @@ export function AdminTopbar() {
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              Đăng xuất
+              Log out
             </button>
           </div>
         )}

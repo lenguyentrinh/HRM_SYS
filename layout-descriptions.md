@@ -262,7 +262,7 @@ Access: Public (no auth), no sidebar/nav, auto-refresh
 
 **Clock & Date:**
 - Large digital clock (HH:mm:ss), font-black, centered
-- Date below (e.g. "Thứ Hai, 17/06/2026") in slate-400
+- Date below (e.g. "Monday, 17/06/2026") in slate-400
 
 **Shift Dropdown** (shown when 2+ shifts overlap):
 - Custom dark dropdown with shift name + time range

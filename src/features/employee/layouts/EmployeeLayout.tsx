@@ -3,11 +3,11 @@ import { Home, Clock, FileText, DollarSign, UserCircle, Bell } from 'lucide-reac
 import { cn } from '@/lib/utils'
 
 const bottomNav = [
-  { to: '/', label: 'Trang chủ', icon: Home, end: true },
-  { to: '/attendance', label: 'Chấm công', icon: Clock },
-  { to: '/leave', label: 'Yêu cầu', icon: FileText },
-  { to: '/salary', label: 'Lương', icon: DollarSign },
-  { to: '/profile', label: 'Tài khoản', icon: UserCircle },
+  { to: '/', label: 'Home', icon: Home, end: true },
+  { to: '/attendance', label: 'Check-in', icon: Clock },
+  { to: '/leave', label: 'Requests', icon: FileText },
+  { to: '/salary', label: 'Salary', icon: DollarSign },
+  { to: '/profile', label: 'Account', icon: UserCircle },
 ]
 
 const leaveGroupRoutes = ['/leave', '/shift-change']
