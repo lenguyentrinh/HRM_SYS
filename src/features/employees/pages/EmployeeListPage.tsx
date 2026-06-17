@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Loader2 } from 'lucide-react'
+import { Plus, Search, Upload, Download, Loader2 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TableSkeleton } from '@/components/shared/LoadingSkeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { EmployeeForm } from '../components/EmployeeForm'
+import { BulkImportDialog } from '../components/BulkImportDialog'
 import { useEmployees, useUpsertEmployee } from '../hooks/useEmployees'
 import { useAuthStore } from '@/stores/authStore'
 import { formatDate, formatCurrency } from '@/lib/utils'
@@ -26,12 +27,12 @@ export function EmployeeListPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [page, setPage] = useState(0)
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
 
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value)
-    clearTimeout((handleSearchChange as unknown as { timer?: ReturnType<typeof setTimeout> }).timer)
-    ;(handleSearchChange as unknown as { timer?: ReturnType<typeof setTimeout> }).timer = setTimeout(() => setSearch(value), 300)
-  }
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput), 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   const pageSize = 15
   const { data, isLoading, isFetching } = useEmployees({ search, status: statusFilter, type: typeFilter, page, pageSize })
@@ -55,6 +56,18 @@ export function EmployeeListPage() {
             {data?.count ?? 0} employees
             {isFetching && !isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-400" />}
           </span>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+              <Upload className="h-4 w-4" />
+              Import CSV
+            </Button>
+            <Button size="sm" onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4" />
+              Add Employee
+            </Button>
+          </>
         }
       />
 
@@ -90,9 +103,6 @@ export function EmployeeListPage() {
             <SelectItem value="parttime">Part-time</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" onClick={() => setShowAddDialog(true)}>
-          Add Employee
-        </Button>
       </div>
 
       <div className="bg-white rounded-lg border">
@@ -166,6 +176,8 @@ export function EmployeeListPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <BulkImportDialog open={showImportDialog} onOpenChange={setShowImportDialog} />
     </div>
   )
 }
