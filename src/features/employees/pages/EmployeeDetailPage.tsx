@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit, KeyRound, UserCheck, UserX, UserPlus } from 'lucide-react'
+import { ArrowLeft, Edit, Download, KeyRound, UserCheck, UserX, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { EmployeeStatusBadge } from '@/components/shared/StatusBadge'
 import { CardSkeleton } from '@/components/shared/LoadingSkeleton'
 import { EmployeeForm } from '../components/EmployeeForm'
 import { useEmployee, useUpsertEmployee, useResetEmployeePassword, useLinkEmployeeAccount, useToggleEmployeeStatus } from '../hooks/useEmployees'
@@ -15,10 +12,18 @@ import { useAuthStore } from '@/stores/authStore'
 import { formatDate, formatCurrency, formatPhone } from '@/lib/utils'
 import type { EmployeeFormValues } from '../types'
 
+const statusDotMap: Record<string, string> = {
+  active: 'bg-green-500',
+  inactive: 'bg-orange-500',
+  probation: 'bg-blue-500',
+  terminated: 'bg-red-500',
+}
+
 export function EmployeeDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const branchId = useAuthStore((s) => s.activeBranchId ?? '')
+  const [activeTab, setActiveTab] = useState('info')
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showResetPwDialog, setShowResetPwDialog] = useState(false)
   const [showLinkAccountDialog, setShowLinkAccountDialog] = useState(false)
@@ -63,172 +68,254 @@ export function EmployeeDetailPage() {
     ],
   }
 
+  const tabs = [
+    { key: 'info', label: 'General Info' },
+    { key: 'salary', label: 'Salary & Allowance' },
+    { key: 'status', label: 'Status Management' },
+  ]
+
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/employees')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold">{employee.full_name}</h1>
-          <p className="text-sm text-slate-500">{employee.employee_code}</p>
+    <div className="">
+      {/* Back link */}
+      <button
+        onClick={() => navigate('/admin/employees')}
+        className="flex items-center gap-2 text-primary font-medium hover:underline text-sm mb-6 transition-all"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Employees
+      </button>
+
+      {/* Profile Hero */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-5">
+            <div className="h-16 w-16 rounded-full bg-orange-500 flex items-center justify-center text-white text-xl font-bold shrink-0">
+              {employee.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-[32px] font-semibold leading-[40px] tracking-[-0.01em] text-slate-900">{employee.full_name}</h1>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-sm text-slate-500">{employee.position || employee.department || '\u2014'}</span>
+                <span className="text-slate-300">|</span>
+                <span className="text-xs font-mono text-orange-600">{employee.employee_code}</span>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold ${
+                  employee.status === 'active' ? 'bg-green-100 text-green-800' :
+                  employee.status === 'inactive' ? 'bg-orange-100 text-orange-800' :
+                  employee.status === 'probation' ? 'bg-blue-100 text-blue-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusDotMap[employee.status]}`} />
+                  {employee.status === 'active' ? 'Active' :
+                   employee.status === 'inactive' ? 'Inactive' :
+                   employee.status === 'probation' ? 'Probation' : 'Terminated'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold tracking-[0.05em] rounded-lg hover:bg-slate-100 transition-colors">
+              <Download className="h-4 w-4" />
+              Export Dossier
+            </button>
+            <Button size="sm" onClick={() => setShowEditDialog(true)} className="gap-2">
+              <Edit className="h-4 w-4" />
+              Edit Profile
+            </Button>
+          </div>
         </div>
-        <EmployeeStatusBadge status={employee.status} />
-        <Button size="sm" onClick={() => setShowEditDialog(true)}>
-          <Edit className="h-4 w-4" />
-          Edit
-        </Button>
       </div>
 
-      <Tabs defaultValue="info">
-        <TabsList>
-          <TabsTrigger value="info">General Info</TabsTrigger>
-          <TabsTrigger value="salary">Salary & Allowance</TabsTrigger>
-          <TabsTrigger value="status">Status Management</TabsTrigger>
-        </TabsList>
+      {/* Custom Tabs */}
+      <div className="flex border-b border-slate-200 mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`relative px-6 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'text-primary'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.key && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="info">
-          <Card className="mt-4">
-            <CardHeader className="flex flex-row items-center justify-between py-3">
-              <CardTitle className="text-base">Login Account</CardTitle>
-              {linkedUser && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5 h-8"
-                  onClick={() => { setNewPassword(''); setShowResetPwDialog(true) }}
-                >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  Reset Password
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              {linkedUser ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                    <UserCheck className="h-4 w-4" />
-                    <span>Account active</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-slate-500">Login phone: </span>
-                    <span className="font-mono font-medium">
-                      {formatPhone(linkedUser.phone)}
+      {/* General Info Tab */}
+      {activeTab === 'info' && (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8">
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Full Name</p>
+              <p className="text-sm font-semibold text-slate-900">{employee.full_name}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Employee Code</p>
+              <p className="text-sm font-semibold text-slate-900 font-mono text-orange-600">{employee.employee_code}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Employment Type</p>
+              <p className="text-sm font-semibold text-slate-900">{employee.type === 'fulltime' ? 'Full-time' : 'Part-time'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Department</p>
+              <p className="text-sm font-semibold text-slate-900">{employee.department ?? '\u2014'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Position</p>
+              <p className="text-sm font-semibold text-slate-900">{employee.position ?? '\u2014'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Base Salary</p>
+              <p className="text-sm font-semibold text-slate-900">{formatCurrency(employee.base_salary)}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Allowance</p>
+              <p className="text-sm font-semibold text-slate-900">{formatCurrency(employee.allowance)}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Join Date</p>
+              <p className="text-sm font-semibold text-slate-900">{formatDate(employee.join_date)}</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Current Status</p>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold ${
+                employee.status === 'active' ? 'bg-green-100 text-green-800' :
+                employee.status === 'inactive' ? 'bg-orange-100 text-orange-800' :
+                employee.status === 'probation' ? 'bg-blue-100 text-blue-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${statusDotMap[employee.status]}`} />
+                {employee.status === 'active' ? 'Active' :
+                 employee.status === 'inactive' ? 'Inactive' :
+                 employee.status === 'probation' ? 'Probation' : 'Terminated'}
+              </span>
+            </div>
+            {employee.notes && (
+              <div className="col-span-full">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Notes</p>
+                <p className="text-sm font-semibold text-slate-900">{employee.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Account & Actions */}
+          <div className="mt-8 pt-6 border-t border-slate-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Login Account</p>
+                {linkedUser ? (
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <UserCheck className="h-3.5 w-3.5" />
+                      Account active
                     </span>
+                    <span className="text-sm text-slate-600">Login phone: {formatPhone(linkedUser.phone)}</span>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    <UserX className="h-4 w-4" />
-                    <span>No account — employee cannot login</span>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5 h-8"
-                    onClick={() => { setLinkPhone(''); setLinkPassword(''); setShowLinkAccountDialog(true) }}
-                  >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    Create Account
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-base">Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div>
-                  <dt className="text-slate-500">Employee Type</dt>
-                  <dd className="font-medium mt-0.5">
-                    {employee.type === 'fulltime' ? 'Full-time' : 'Part-time'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Join Date</dt>
-                  <dd className="font-medium mt-0.5">{formatDate(employee.join_date)}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Department</dt>
-                  <dd className="font-medium mt-0.5">{employee.department ?? '\u2014'}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Position</dt>
-                  <dd className="font-medium mt-0.5">{employee.position ?? '\u2014'}</dd>
-                </div>
-                {employee.notes && (
-                  <div className="col-span-2">
-                    <dt className="text-slate-500">Notes</dt>
-                    <dd className="font-medium mt-0.5">{employee.notes}</dd>
-                  </div>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                    <UserX className="h-3.5 w-3.5" />
+                    No account
+                  </span>
                 )}
-              </dl>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="salary">
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-base">Salary & Allowance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div>
-                  <dt className="text-slate-500">Base Salary</dt>
-                  <dd className="font-semibold text-lg mt-0.5 text-orange-600">
-                    {formatCurrency(employee.base_salary)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Allowance</dt>
-                  <dd className="font-medium mt-0.5">{formatCurrency(employee.allowance)}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Estimated Income</dt>
-                  <dd className="font-medium mt-0.5">{formatCurrency(employee.base_salary + employee.allowance)}</dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="status">
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="text-base">Employee Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <p className="text-sm text-slate-500 mb-1">Current status</p>
-                <EmployeeStatusBadge status={employee.status} />
               </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Change status</p>
-                <div className="flex flex-wrap gap-2">
-                  {(statusActions[employee.status] ?? []).map((action) => (
-                    <Button
-                      key={action.status}
-                      variant={action.variant}
-                      size="sm"
-                      onClick={() => toggleStatus.mutate({ id, status: action.status })}
-                      disabled={toggleStatus.isPending}
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
+              <div className="flex items-center gap-3">
+                {linkedUser ? (
+                  <button
+                    onClick={() => { setNewPassword(''); setShowResetPwDialog(true) }}
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold tracking-[0.05em] rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    Reset Password
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setLinkPhone(''); setLinkPassword(''); setShowLinkAccountDialog(true) }}
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold tracking-[0.05em] rounded-lg hover:bg-slate-100 transition-colors"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Create Account
+                  </button>
+                )}
+                {employee.status !== 'terminated' && (
+                  <button
+                    onClick={() => toggleStatus.mutate({ id, status: 'terminated' })}
+                    disabled={toggleStatus.isPending}
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 text-sm font-semibold tracking-[0.05em] rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <UserX className="h-4 w-4" />
+                    Terminate Employment
+                  </button>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Salary & Allowance Tab */}
+      {activeTab === 'salary' && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">Salary & Allowance</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Base Salary</p>
+              <p className="text-2xl font-bold text-orange-600">{formatCurrency(employee.base_salary)}</p>
+            </div>
+            <div className="p-5 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Allowance</p>
+              <p className="text-2xl font-bold text-slate-900">{formatCurrency(employee.allowance)}</p>
+            </div>
+            <div className="p-5 rounded-xl bg-orange-50 border border-orange-100">
+              <p className="text-xs font-medium text-orange-700 uppercase tracking-wider mb-2">Estimated Income</p>
+              <p className="text-2xl font-bold text-orange-700">{formatCurrency(employee.base_salary + employee.allowance)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Management Tab */}
+      {activeTab === 'status' && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">Employee Status</h3>
+          <div className="flex items-center gap-4 mb-8">
+            <span className="text-sm text-slate-700">Current Status:</span>
+            <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold ${
+              employee.status === 'active' ? 'bg-green-100 text-green-800' :
+              employee.status === 'inactive' ? 'bg-orange-100 text-orange-800' :
+              employee.status === 'probation' ? 'bg-blue-100 text-blue-800' :
+              'bg-red-100 text-red-800'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${statusDotMap[employee.status]}`} />
+              {employee.status === 'active' ? 'Active' :
+               employee.status === 'inactive' ? 'Inactive' :
+               employee.status === 'probation' ? 'Probation' : 'Terminated'}
+            </span>
+          </div>
+          <div className="border-t border-slate-200 pt-6">
+            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Change status</h4>
+            <div className="flex flex-wrap gap-3">
+              {(statusActions[employee.status] ?? []).map((action) => (
+                <Button
+                  key={action.status}
+                  variant={action.variant}
+                  size="sm"
+                  onClick={() => toggleStatus.mutate({ id, status: action.status })}
+                  disabled={toggleStatus.isPending}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialogs */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
