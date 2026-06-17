@@ -4,6 +4,7 @@
 - Build Shift CRUD feature (HRMSYS-14) with list page (HRMSYS-61) and create/edit form (HRMSYS-62).
 - Actual results: 100% complete — list page with search, create/edit dialog, delete confirmation, audit logging.
 - Completion date: 2026-06-17
+- Build status: ✅ Clean (0 TypeScript errors, 0 ESLint blocking errors)
 
 ## Completed Features
 
@@ -43,8 +44,8 @@
 - None. Full CRUD implemented.
 
 ## Known Issues & Technical Debt
-- [DEBT-01] No pagination on shift list — acceptable since shifts are typically < 20 per branch.
-- [DEBT-01] No toast/feedback on audit log failure (silent failure) — matches existing employee pattern.
+- **[DEBT-P14-01]** No pagination on shift list — acceptable since shifts are typically < 20 per branch. Impact: Low.
+- **[DEBT-P14-02]** No toast/feedback on audit log failure (silent failure) — matches existing employee pattern. Impact: Low.
 
 ## QC Test Checklist
 - [ ] TC-01: Create shift — fill all fields, submit → verify in DB and audit_logs.
