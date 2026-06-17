@@ -7,6 +7,7 @@ import { SignUpPage } from './features/auth/pages/SignUpPage'
 import { DashboardPage } from './features/admin/pages/DashboardPage'
 import { EmployeeListPage } from './features/employees/pages/EmployeeListPage'
 import { EmployeeDetailPage } from './features/employees/pages/EmployeeDetailPage'
+import { ShiftListPage } from './features/shifts/pages/ShiftListPage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -39,7 +40,7 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'employees', element: <EmployeeListPage /> },
           { path: 'employees/:id', element: <EmployeeDetailPage /> },
-          { path: 'shifts', element: <Placeholder title="Shift Management" /> },
+          { path: 'shifts', element: <ShiftListPage /> },
           { path: 'attendance', element: <Placeholder title="Attendance Sheet" /> },
           { path: 'leaves', element: <Placeholder title="Leave Management" /> },
           { path: 'shift-changes', element: <Placeholder title="Shift Change Requests" /> },
