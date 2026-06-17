@@ -1,7 +1,16 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # HRM System – Claude Code Context
 
 Internal HR management web app for ~50 employees: QR attendance tracking, payroll calculation, leave management.
 Company internal app — **no SEO, no SSR needed**. All users have accounts.
+
+> **Current build state (Phase 1–2):** Only the auth feature is implemented (`src/features/auth/`). Both portals are placeholder routes in `src/router.tsx` ("Coming Soon"). The Directory Structure and Route Map below describe the *target* system; most pages/hooks/Edge Functions do not exist yet. Verify a file exists before referencing it.
+
+
+before create layout read # Stitch Design Taste — Semantic Design System Skill and layout in MCP server
 
 ---
 
@@ -26,13 +35,41 @@ Company internal app — **no SEO, no SSR needed**. All users have accounts.
 npm run dev        # Dev server at http://localhost:5173
 npm run build      # Build production (output: dist/)
 npm run preview    # Preview production build
-npm run typecheck  # TypeScript check (no emit)
-npm run lint       # ESLint check
+npm run lint       # ESLint check (eslint .)
 ```
+
+> No standalone `typecheck` script. `npm run build` runs `tsc -b && vite build`, so TypeScript errors surface at build time. Per `rules/component-architecture.md`, **`npm run build` must pass with 0 errors before reporting a phase complete** — the dev server does not catch all type errors. There is no test runner configured yet.
 
 ---
 
 ## Directory Structure
+
+**Actual convention is feature-based** (enforced by `rules/component-architecture.md`), not the flat `pages/`+`hooks/` map shown further below. New code goes under `src/features/<module>/`:
+
+```
+src/
+  features/
+    <module>/             # e.g. auth, employees, attendance, leave, payroll
+      components/         # presentational UI for this module
+      hooks/              # custom + TanStack Query hooks (data fetching lives here, not in pages)
+      pages/              # route-target pages — compose only, no business logic
+      types.ts            # module-specific types
+      utils.ts            # pure helpers
+  components/
+    ui/                   # shadcn/ui primitives (do not modify directly)
+    shared/               # cross-portal components (PageHeader, DataTable, StatusBadge...)
+  lib/
+    auth.ts               # custom auth: loginWithPhone, createUserWithPhone, changePassword (SHA-256)
+    supabase.ts           # Supabase client singleton
+    utils.ts              # cn() + shared helpers
+  stores/                 # Zustand stores (authStore.ts)
+  router.tsx              # createBrowserRouter — route table + guards
+  App.tsx                 # RouterProvider + sonner <Toaster>
+```
+
+Conventions: import via the `@/` alias (`@/lib/auth`), keep files < 200 lines, forms use react-hook-form + zod (`@hookform/resolvers`), toasts via `sonner`.
+
+The block below is the **planned target layout** for the full system (mostly not built yet):
 
 ```
 src/
@@ -101,9 +138,12 @@ skills/                   # Reusable skill templates
 
 | Layer | Technology | Rationale |
 |---|---|---|
-| Frontend | React 18 + Vite | Internal app, no SSR needed. Vite faster than Next.js |
-| Language | TypeScript strict | Full type safety, especially Supabase types |
-| Styling | Tailwind CSS + shadcn/ui | Utility-first, pre-built component library |
+| Frontend | React 19 + Vite 8 | Internal app, no SSR needed. Vite faster than Next.js |
+| Language | TypeScript 6 (strict) | Full type safety, especially Supabase types |
+| Routing | React Router 7 (`createBrowserRouter`) | Data-router API; guards as layout routes with `<Outlet />` |
+| Styling | Tailwind CSS 4 + shadcn/ui | Utility-first, pre-built component library |
+| Forms | react-hook-form + zod 4 | Schema validation via `@hookform/resolvers` |
+| Toasts | sonner | `<Toaster>` mounted in `App.tsx` |
 | Server state | TanStack Query | Cache, refetch, optimistic updates |
 | UI state | Zustand | Lighter than Redux, sufficient for this app |
 | Database | Supabase PostgreSQL | Built-in Realtime, Auth, Edge Functions |
@@ -139,9 +179,10 @@ When determining which shift employee X works on date Y:
 ### Auth Flow (Custom)
 - Do not use `supabase.auth.*` — all auth goes through `src/lib/auth.ts`
 - Login: query `users` table by phone + SHA-256(password)
-- Session: store `{ id, role, branch_id, phone }` in Zustand store, persist to `localStorage` key `hrm-auth`
-- Route guard reads from store — no async call needed on app startup
-- Create new user: `createUserWithPhone()` in `src/lib/auth.ts` (admin uses when adding employees)
+- Session: `authStore` (`src/stores/authStore.ts`) persists `{ user, activeBranchId, expiresAt }` under `localStorage` key `hrm-auth` with a **12h TTL**. On rehydrate / `checkExpiry()`, an expired session clears the user. The persisted shape is custom (`state.session`), not Zustand's default partialize — preserve it when editing the store.
+- `activeBranchId` is set on login: `null` for `super_admin` (can switch branches), else the user's `branch_id`.
+- Route guards live in `src/features/auth/components/RouteGuard.tsx`: `<RouteGuard allowedRoles={[...]} />` redirects unauthenticated users to `/login` and wrong-role users to their home (`/` for employee, `/admin` otherwise); `<PublicOnlyRoute />` bounces logged-in users away from `/login`. Both read the store synchronously — no async call on startup.
+- Create new user: `createUserWithPhone()` in `src/lib/auth.ts` (admin uses when adding employees).
 
 ### Notifications
 - Insert into `notifications` table → Supabase Realtime trigger → client receives instantly
