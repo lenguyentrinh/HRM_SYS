@@ -8,6 +8,12 @@ import { DashboardPage } from './features/admin/pages/DashboardPage'
 import { EmployeeListPage } from './features/employees/pages/EmployeeListPage'
 import { EmployeeDetailPage } from './features/employees/pages/EmployeeDetailPage'
 import { ShiftListPage } from './features/shifts/pages/ShiftListPage'
+import { TabletQrPage } from './features/tablet/pages/TabletQrPage'
+import { CheckinPage } from './features/checkin/pages/CheckinPage'
+import { RosterPage } from './features/roster/pages/RosterPage'
+import { ShiftChangeListPage } from './features/shift-changes/pages/ShiftChangeListPage'
+import { AttendanceListPage } from './features/attendance/pages/AttendanceListPage'
+import { MyAttendancePage } from './features/attendance/pages/MyAttendancePage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -28,7 +34,7 @@ export const router = createBrowserRouter([
   // Public tablet route
   {
     path: '/tablet/:branch_id',
-    element: <Placeholder title="Tablet QR" />,
+    element: <TabletQrPage />,
   },
   {
     element: <RouteGuard allowedRoles={['super_admin', 'manager']} />,
@@ -41,13 +47,13 @@ export const router = createBrowserRouter([
           { path: 'employees', element: <EmployeeListPage /> },
           { path: 'employees/:id', element: <EmployeeDetailPage /> },
           { path: 'shifts', element: <ShiftListPage /> },
-          { path: 'attendance', element: <Placeholder title="Attendance Sheet" /> },
+          { path: 'attendance', element: <AttendanceListPage /> },
           { path: 'leaves', element: <Placeholder title="Leave Management" /> },
-          { path: 'shift-changes', element: <Placeholder title="Shift Change Requests" /> },
+          { path: 'shift-changes', element: <ShiftChangeListPage /> },
           { path: 'payroll', element: <Placeholder title="Payroll" /> },
           { path: 'analytics', element: <Placeholder title="Reports & Analytics" /> },
           { path: 'settings', element: <Placeholder title="System Settings" /> },
-          { path: 'roster', element: <Placeholder title="Shift Scheduling" /> },
+          { path: 'roster', element: <RosterPage /> },
           { path: 'audit', element: <Placeholder title="Audit Logs" /> },
           { path: 'branches', element: <Placeholder title="Branch Management" /> },
         ],
@@ -61,8 +67,8 @@ export const router = createBrowserRouter([
         element: <EmployeeLayout />,
         children: [
           { index: true, element: <Placeholder title="Home" /> },
-          { path: 'checkin', element: <Placeholder title="QR Check-in" /> },
-          { path: 'attendance', element: <Placeholder title="Attendance History" /> },
+          { path: 'checkin', element: <CheckinPage /> },
+          { path: 'attendance', element: <MyAttendancePage /> },
           { path: 'leave', element: <Placeholder title="Leave Requests" /> },
           { path: 'shift-change', element: <Placeholder title="Shift Change" /> },
           { path: 'salary', element: <Placeholder title="Salary Details" /> },

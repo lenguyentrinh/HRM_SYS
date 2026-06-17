@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -24,9 +24,11 @@ serve(async (req) => {
       date?: string;
     };
 
-    // Use Vietnam time (UTC+7) so the cron running at 23:30 UTC still gets the correct VN date
+    // Vietnam time (UTC+7) so pg_cron at 23:30 UTC gets correct VN date
     const VN_OFFSET = 7 * 60 * 60 * 1000;
-    const dateStr = body.date ?? new Date(Date.now() + VN_OFFSET).toISOString().split("T")[0];
+    const dateStr =
+      body.date ??
+      new Date(Date.now() + VN_OFFSET).toISOString().split("T")[0];
 
     let shifts: {
       id: string;
@@ -36,7 +38,6 @@ serve(async (req) => {
     }[] = [];
 
     if (body.run_all) {
-      // Generate QR for all active shifts
       const { data, error } = await supabase
         .from("shifts")
         .select("id, end_time, branch_id, is_overnight")
@@ -53,24 +54,35 @@ serve(async (req) => {
 
       if (error) throw error;
       if (data) shifts = [data];
+    } else {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Provide run_all=true or shift_id",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const tokens = shifts.map((shift) => {
-      // Normalize HH:MM:SS → HH:MM (PostgreSQL TIME returns seconds, Date constructor needs HH:MM:SS)
       const endTimeHHMM = shift.end_time.slice(0, 5);
       const [endH] = endTimeHHMM.split(":").map(Number);
       let expireDate = dateStr;
-      // Overnight shift ends on the next day (end_time is in early hours)
       if (shift.is_overnight && endH < 12) {
         const d = new Date(`${dateStr}T00:00:00`);
         d.setDate(d.getDate() + 1);
         expireDate = d.toISOString().split("T")[0];
       }
-      // Append VN timezone so 15:00 VN is stored as 08:00 UTC, not treated as UTC (which would be 22:00 VN)
-      const expiresAt = new Date(`${expireDate}T${endTimeHHMM}:00+07:00`);
+      const expiresAt = new Date(
+        `${expireDate}T${endTimeHHMM}:00+07:00`,
+      );
 
       return {
         shift_id: shift.id,
+        branch_id: shift.branch_id,
         date: dateStr,
         token: crypto.randomUUID(),
         is_active: true,
