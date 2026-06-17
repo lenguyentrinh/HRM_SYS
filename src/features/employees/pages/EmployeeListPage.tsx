@@ -15,7 +15,10 @@ import { BulkImportDialog } from '../components/BulkImportDialog'
 import { useEmployees, useUpsertEmployee } from '../hooks/useEmployees'
 import { useAuthStore } from '@/stores/authStore'
 import { formatDate, formatCurrency } from '@/lib/utils'
+import { downloadCSV } from '@/lib/export'
+import { supabase } from '@/lib/supabase'
 import type { EmployeeFormValues } from '../types'
+import type { Employee } from '@/types/database'
 
 export function EmployeeListPage() {
   const navigate = useNavigate()
@@ -40,6 +43,32 @@ export function EmployeeListPage() {
 
   const totalPages = Math.ceil((data?.count ?? 0) / pageSize)
 
+  const handleExportCSV = async () => {
+    let query = supabase
+      .from('employees')
+      .select('employee_code, full_name, department, position, type, base_salary, allowance, join_date, status')
+      .eq('branch_id', branchId)
+      .order('full_name')
+    if (search) query = query.ilike('full_name', `%${search}%`)
+    if (statusFilter) query = query.eq('status', statusFilter)
+    if (typeFilter) query = query.eq('type', typeFilter)
+    const { data } = await query
+    if (!data?.length) return
+    const headers = ['Code', 'Full Name', 'Department', 'Position', 'Type', 'Base Salary', 'Allowance', 'Join Date', 'Status']
+    const rows = (data as Pick<Employee, 'employee_code' | 'full_name' | 'department' | 'position' | 'type' | 'base_salary' | 'allowance' | 'join_date' | 'status'>[]).map((e) => [
+      e.employee_code,
+      e.full_name,
+      e.department ?? '',
+      e.position ?? '',
+      e.type === 'fulltime' ? 'Full-time' : 'Part-time',
+      String(e.base_salary),
+      String(e.allowance),
+      e.join_date,
+      e.status === 'active' ? 'Active' : e.status === 'inactive' ? 'Inactive' : e.status === 'probation' ? 'Probation' : 'Terminated',
+    ])
+    downloadCSV('employees.csv', [headers, ...rows])
+  }
+
   const handleAdd = (values: EmployeeFormValues) => {
     upsert.mutate(
       { ...values, branch_id: branchId },
@@ -62,6 +91,10 @@ export function EmployeeListPage() {
             <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
               <Upload className="h-4 w-4" />
               Import CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="h-4 w-4" />
+              Export CSV
             </Button>
             <Button size="sm" onClick={() => setShowAddDialog(true)}>
               <Plus className="h-4 w-4" />
