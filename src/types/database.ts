@@ -16,6 +16,19 @@ export interface User {
   created_at: string
 }
 
+export interface Shift {
+  id: string
+  branch_id: string
+  name: string
+  start_time: string
+  end_time: string
+  is_overnight: boolean
+  grace_period_minutes: number
+  early_leave_minutes: number
+  is_active: boolean
+  created_at: string
+}
+
 export interface Employee {
   id: string
   user_id: string | null
