@@ -117,12 +117,14 @@ CREATE TABLE IF NOT EXISTS public.employee_shift_assignments (
 -- TABLE: shift_schedules (specific date, takes priority over assignment)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.shift_schedules (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  employee_id UUID NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
-  shift_id    UUID NOT NULL REFERENCES public.shifts(id),
-  date        DATE NOT NULL,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (employee_id, date)
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    employee_id UUID NOT NULL REFERENCES public.employees(id) ON DELETE CASCADE,
+    shift_id    UUID REFERENCES public.shifts(id),
+    date        DATE NOT NULL,
+    is_override BOOLEAN DEFAULT true NOT NULL,
+    created_by  UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (employee_id, date)
 );
 
 -- =============================================================================

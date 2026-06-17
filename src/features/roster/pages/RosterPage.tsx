@@ -71,9 +71,9 @@ export function RosterPage() {
   }, [assignments])
 
   const scheduleMap = useMemo(() => {
-    const map = new Map<string, { shift_id: string; shift_name: string }>()
+    const map = new Map<string, { shift_id: string | null; shift_name: string }>()
     ;(schedules ?? []).forEach((s) => {
-      map.set(`${s.employee_id}_${s.date}`, { shift_id: s.shift_id, shift_name: s.shifts.name })
+      map.set(`${s.employee_id}_${s.date}`, { shift_id: s.shift_id, shift_name: s.shifts?.name ?? '' })
     })
     return map
   }, [schedules])
@@ -95,13 +95,14 @@ export function RosterPage() {
         const resolved = override ?? assignment
         if (!resolved) return
 
-        const existing = shiftCounts.get(resolved.shift_id)
+        const key = resolved.shift_id ?? 'off'
+        const existing = shiftCounts.get(key)
         if (existing) {
           existing.count++
         } else {
-          shiftCounts.set(resolved.shift_id, {
-            shiftId: resolved.shift_id,
-            shiftName: resolved.shift_name,
+          shiftCounts.set(key, {
+            shiftId: key,
+            shiftName: resolved.shift_id ? resolved.shift_name : 'Day Off',
             count: 1,
           })
         }

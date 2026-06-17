@@ -83,7 +83,7 @@ export interface QrToken {
 export interface ShiftSchedule {
   id: string
   employee_id: string
-  shift_id: string
+  shift_id: string | null
   date: string
   is_override: boolean
   created_by: string | null
