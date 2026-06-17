@@ -5,6 +5,7 @@ import { EmployeeLayout } from './features/employee/layouts/EmployeeLayout'
 import { LoginPage } from './features/auth/pages/LoginPage'
 import { SignUpPage } from './features/auth/pages/SignUpPage'
 import { DashboardPage } from './features/admin/pages/DashboardPage'
+import { EmployeeListPage } from './features/employees/pages/EmployeeListPage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'employees', element: <Placeholder title="Employee Management" /> },
+          { path: 'employees', element: <EmployeeListPage /> },
           { path: 'employees/:id', element: <Placeholder title="Employee Details" /> },
           { path: 'shifts', element: <Placeholder title="Shift Management" /> },
           { path: 'attendance', element: <Placeholder title="Attendance Sheet" /> },
