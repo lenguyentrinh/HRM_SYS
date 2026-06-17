@@ -43,7 +43,7 @@ export function useAttendanceSummary(filters: AttendanceFilters = {}) {
       if (!branchId) return { total: 0, present: 0, late: 0, absent: 0, leave: 0, holiday: 0 }
       let query = supabase
         .from('attendance_records')
-        .select('status', { count: 'exact' })
+        .select('status, employees!inner(branch_id)', { count: 'exact' })
         .eq('employees.branch_id', branchId)
 
       if (date_from) query = query.gte('date', date_from)
@@ -52,7 +52,7 @@ export function useAttendanceSummary(filters: AttendanceFilters = {}) {
 
       const { data, error } = await query
       if (error) throw error
-      const records = (data ?? []) as Pick<AttendanceRecord, 'status'>[]
+      const records = (data ?? []) as { status: string }[]
       return {
         total: records.length,
         present: records.filter((r) => r.status === 'present').length,

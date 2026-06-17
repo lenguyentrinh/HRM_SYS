@@ -13,7 +13,7 @@ export function useShiftChangeRequests(status?: string) {
       if (!branchId) return []
       let query = supabase
         .from('shift_change_requests')
-        .select('*, employees!inner(full_name, employee_code), from_shift:shifts!from_shift_id(name, start_time, end_time), to_shift:shifts!to_shift_id(name, start_time, end_time)')
+        .select('*, employees!inner(full_name, employee_code, department), from_shift:shifts!from_shift_id(name, start_time, end_time), to_shift:shifts!to_shift_id(name, start_time, end_time)')
         .eq('employees.branch_id', branchId)
         .order('created_at', { ascending: false })
 
@@ -82,7 +82,7 @@ export function useMyShiftChangeRequests() {
       if (!user?.id) return []
       const { data, error } = await supabase
         .from('shift_change_requests')
-        .select('*, employees!inner(full_name, employee_code), from_shift:shifts!from_shift_id(name, start_time, end_time), to_shift:shifts!to_shift_id(name, start_time, end_time)')
+        .select('*, employees!inner(full_name, employee_code, department), from_shift:shifts!from_shift_id(name, start_time, end_time), to_shift:shifts!to_shift_id(name, start_time, end_time)')
         .eq('employee_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error

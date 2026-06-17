@@ -19,7 +19,7 @@ export interface ShiftChangeRequestWithJoins {
   review_reason: string | null
   created_at: string
   updated_at: string
-  employees: { full_name: string; employee_code: string }
+  employees: { full_name: string; employee_code: string; department: string | null }
   from_shift: { name: string; start_time: string; end_time: string }
   to_shift: { name: string; start_time: string; end_time: string }
 }
