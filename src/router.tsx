@@ -6,6 +6,7 @@ import { LoginPage } from './features/auth/pages/LoginPage'
 import { SignUpPage } from './features/auth/pages/SignUpPage'
 import { DashboardPage } from './features/admin/pages/DashboardPage'
 import { EmployeeListPage } from './features/employees/pages/EmployeeListPage'
+import { EmployeeDetailPage } from './features/employees/pages/EmployeeDetailPage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -36,7 +37,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'employees', element: <EmployeeListPage /> },
-          { path: 'employees/:id', element: <Placeholder title="Employee Details" /> },
+          { path: 'employees/:id', element: <EmployeeDetailPage /> },
           { path: 'shifts', element: <Placeholder title="Shift Management" /> },
           { path: 'attendance', element: <Placeholder title="Attendance Sheet" /> },
           { path: 'leaves', element: <Placeholder title="Leave Management" /> },

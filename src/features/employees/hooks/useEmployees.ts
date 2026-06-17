@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
-import { createUserWithPhone } from '@/lib/auth'
+import { createUserWithPhone, changePassword } from '@/lib/auth'
 import type { Employee } from '@/types/database'
 
 export interface EmployeeFilters {
@@ -38,6 +38,23 @@ export function useEmployees(filters: EmployeeFilters = {}) {
       return { data: (data ?? []) as Employee[], count: count ?? 0 }
     },
     enabled: !!branchId,
+  })
+}
+
+export function useEmployee(id: string) {
+  return useQuery({
+    queryKey: ['employee', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*, users(id, role, phone)')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      return data as Employee & { users: { id: string; role: string; phone: string } | null }
+    },
+    enabled: !!id,
   })
 }
 
@@ -116,5 +133,76 @@ export function useUpsertEmployee() {
     onError: (err: Error) => {
       toast.error(err.message ?? 'An error occurred')
     },
+  })
+}
+
+export function useResetEmployeePassword() {
+  const adminUserId = useAuthStore((s) => s.user?.id)
+  const adminBranchId = useAuthStore((s) => s.activeBranchId)
+
+  return useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      await changePassword(userId, newPassword)
+      await supabase.from('audit_logs').insert({
+        branch_id: adminBranchId,
+        user_id: adminUserId,
+        action: 'password_reset',
+        table_name: 'users',
+        target_type: 'user',
+        target_id: userId,
+      })
+    },
+    onSuccess: () => toast.success('Password reset'),
+    onError: (err: Error) => toast.error(err.message),
+  })
+}
+
+export function useLinkEmployeeAccount() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      employeeId,
+      branchId,
+      phone,
+      password,
+    }: {
+      employeeId: string
+      branchId: string
+      phone: string
+      password: string
+    }) => {
+      const userId = await createUserWithPhone(phone, password, 'employee', branchId)
+      const { error } = await supabase
+        .from('employees')
+        .update({ user_id: userId })
+        .eq('id', employeeId)
+      if (error) {
+        await supabase.from('users').delete().eq('id', userId)
+        throw error
+      }
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['employee', vars.employeeId] })
+      qc.invalidateQueries({ queryKey: ['employees'] })
+      toast.success('Account created and linked')
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+}
+
+export function useToggleEmployeeStatus() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'active' | 'inactive' | 'terminated' | 'probation' }) => {
+      const { error } = await supabase.from('employees').update({ status }).eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employees'] })
+      toast.success('Status updated')
+    },
+    onError: (err: Error) => toast.error(err.message),
   })
 }
