@@ -33,6 +33,7 @@ export const router = createBrowserRouter([
     element: <RouteGuard allowedRoles={['super_admin', 'manager']} />,
     children: [
       {
+        path: '/admin',
         element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
