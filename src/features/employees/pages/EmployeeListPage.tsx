@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Download, Loader2 } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TableSkeleton } from '@/components/shared/LoadingSkeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useEmployees } from '../hooks/useEmployees'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { EmployeeForm } from '../components/EmployeeForm'
+import { useEmployees, useUpsertEmployee } from '../hooks/useEmployees'
 import { useAuthStore } from '@/stores/authStore'
 import { formatDate, formatCurrency } from '@/lib/utils'
-import type { Employee } from '@/types/database'
+import type { EmployeeFormValues } from '../types'
 
 export function EmployeeListPage() {
   const navigate = useNavigate()
@@ -23,16 +25,26 @@ export function EmployeeListPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [page, setPage] = useState(0)
+  const [showAddDialog, setShowAddDialog] = useState(false)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setSearch(searchInput), 300)
-    return () => clearTimeout(timer)
-  }, [searchInput])
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value)
+    clearTimeout((handleSearchChange as unknown as { timer?: ReturnType<typeof setTimeout> }).timer)
+    ;(handleSearchChange as unknown as { timer?: ReturnType<typeof setTimeout> }).timer = setTimeout(() => setSearch(value), 300)
+  }
 
   const pageSize = 15
   const { data, isLoading, isFetching } = useEmployees({ search, status: statusFilter, type: typeFilter, page, pageSize })
+  const upsert = useUpsertEmployee()
 
   const totalPages = Math.ceil((data?.count ?? 0) / pageSize)
+
+  const handleAdd = (values: EmployeeFormValues) => {
+    upsert.mutate(
+      { ...values, branch_id: branchId },
+      { onSuccess: () => setShowAddDialog(false) }
+    )
+  }
 
   return (
     <div>
@@ -78,6 +90,9 @@ export function EmployeeListPage() {
             <SelectItem value="parttime">Part-time</SelectItem>
           </SelectContent>
         </Select>
+        <Button size="sm" onClick={() => setShowAddDialog(true)}>
+          Add Employee
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg border">
@@ -86,7 +101,7 @@ export function EmployeeListPage() {
             <TableSkeleton rows={8} cols={6} />
           </div>
         ) : !data?.data.length ? (
-          <EmptyState title="No employees yet" />
+          <EmptyState title="No employees yet" description="Click 'Add Employee' to get started." />
         ) : (
           <Table>
             <TableHeader>
@@ -138,6 +153,19 @@ export function EmployeeListPage() {
           </div>
         </div>
       )}
+
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New Employee</DialogTitle>
+          </DialogHeader>
+          <EmployeeForm
+            onSubmit={handleAdd}
+            isLoading={upsert.isPending}
+            onCancel={() => setShowAddDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
