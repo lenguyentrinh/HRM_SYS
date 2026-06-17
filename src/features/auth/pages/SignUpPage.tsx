@@ -60,7 +60,7 @@ export function SignUpPage() {
       })
       setUser(user)
       toast.success('Account created successfully')
-      navigate(user.role === 'employee' ? '/' : '/admin', { replace: true })
+      navigate('/', { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account')
     }

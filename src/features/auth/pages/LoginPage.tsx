@@ -32,7 +32,7 @@ export function LoginPage() {
     try {
       const user = await loginWithPhone(values.phone, values.password)
       setUser(user)
-      const to = user.role === 'employee' ? '/' : '/admin'
+      const to = '/'
       navigate(to, { replace: true })
     } catch {
       toast.error('Invalid phone number or password')

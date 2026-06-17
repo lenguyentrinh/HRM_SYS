@@ -12,7 +12,7 @@ export function RouteGuard({ allowedRoles }: RouteGuardProps) {
   if (!user) return <Navigate to="/login" replace />
 
   if (!allowedRoles.includes(user.role)) {
-    const fallback = user.role === 'employee' ? '/' : '/admin'
+    const fallback = '/'
     return <Navigate to={fallback} replace />
   }
 
@@ -23,7 +23,7 @@ export function PublicOnlyRoute() {
   const user = useAuthStore((s) => s.user)
 
   if (user) {
-    const to = user.role === 'employee' ? '/' : '/admin'
+    const to = '/'
     return <Navigate to={to} replace />
   }
 
