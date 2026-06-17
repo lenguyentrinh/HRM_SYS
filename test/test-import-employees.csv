@@ -1,0 +1,16 @@
+full_name,phone,type,department,position,base_salary,allowance,join_date
+Nguyen Van An,0912345671,fulltime,Sales,Nhan vien ban hang,8500000,500000,2024-03-01
+Tran Thi Binh,0912345672,fulltime,Sales,Truong phong,15000000,1000000,2023-06-15
+Le Van Cuong,0912345673,fulltime,Engineering,Senior Developer,18000000,1200000,2022-09-01
+Pham Thi Dao,0912345674,fulltime,Engineering,QA Engineer,12000000,800000,2024-01-10
+Hoang Van Em,0912345675,fulltime,HR,Nhan vien HR,9000000,500000,2024-05-20
+Vo Thi Anh,0912345676,parttime,Admin,Cleaner,3500000,0,2025-01-01
+Dang Van Giang,0912345677,fulltime,Engineering,DevOps,20000000,1500000,2023-01-15
+Bui Thi Hanh,0912345678,fulltime,Sales,Nhan vien ban hang,8500000,500000,2024-07-01
+Ngo Van Huy,0912345679,parttime,Warehouse,Thu kho,4000000,200000,2025-02-01
+Ly Thi Huong,0912345680,fulltime,Marketing,Chuyen vien marketing,10000000,700000,2024-04-15
+Trinh Van Hieu,0912345681,fulltime,Engineering,Frontend Developer,16000000,1000000,2023-08-20
+Doan Thi Kim,0912345682,fulltime,HR,Truong phong HR,16000000,1000000,2022-11-01
+Duong Van Lam,0912345683,fulltime,Engineering,Backend Developer,17000000,1100000,2023-05-10
+Vu Thi Mai,0912345684,parttime,Admin,Le tan,3800000,0,2025-03-01
+Hoang Van Nam,0912345685,fulltime,Sales,Giam sat ban hang,12000000,800000,2024-02-15

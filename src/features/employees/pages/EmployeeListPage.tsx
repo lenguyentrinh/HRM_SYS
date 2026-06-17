@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Upload, Download, Loader2, MoreHorizontal, Filter } from 'lucide-react'
+import { Plus, Search, Upload, Download, Loader2, MoreHorizontal, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/LoadingSkeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,23 @@ import { downloadCSV } from '@/lib/export'
 import { supabase } from '@/lib/supabase'
 import type { EmployeeFormValues } from '../types'
 import type { Employee } from '@/types/database'
+
+function generatePaginationPages(current: number, total: number): number[] {
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i)
+  const pages: number[] = []
+  if (current <= 2) {
+    for (let i = 0; i < Math.min(3, total); i++) pages.push(i)
+    if (total > 3) { pages.push(-1); pages.push(total - 1) }
+  } else if (current >= total - 3) {
+    pages.push(0); pages.push(-1)
+    for (let i = total - 3; i < total; i++) pages.push(i)
+  } else {
+    pages.push(0); pages.push(-1)
+    for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+    pages.push(-1); pages.push(total - 1)
+  }
+  return pages
+}
 
 export function EmployeeListPage() {
   const navigate = useNavigate()
@@ -82,7 +99,7 @@ export function EmployeeListPage() {
             <h1 className="text-[32px] font-semibold leading-[40px] tracking-[-0.01em] text-slate-900">Employees</h1>
             {isFetching && !isLoading && <Loader2 className="h-5 w-5 animate-spin text-orange-600" />}
           </div>
-          <p className="text-base text-slate-500 mt-1">{data?.count ?? 0} employees</p>
+          <p className="text-sm text-slate-500 mt-1">{data?.count ?? 0} employees</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button
@@ -101,7 +118,7 @@ export function EmployeeListPage() {
           </button>
           <button
             onClick={() => setShowAddDialog(true)}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-orange-500 text-orange-950 text-sm font-semibold tracking-[0.05em] rounded-lg hover:brightness-95 transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-6 py-2 bg-orange-500 text-white text-sm font-semibold tracking-[0.05em] rounded-lg hover:bg-orange-600 transition-all shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Add Employee
@@ -151,7 +168,7 @@ export function EmployeeListPage() {
       </section>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         {isLoading ? (
           <div className="p-4">
             <TableSkeleton rows={8} cols={6} />
@@ -160,15 +177,15 @@ export function EmployeeListPage() {
           <EmptyState title="No employees yet" description="Click 'Add Employee' to get started." />
         ) : (
           <Table>
-            <TableHeader className="bg-slate-50 border-b border-slate-200">
+            <TableHeader className="bg-slate-50 [&_tr]:border-b-0">
               <TableRow>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Code</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Full Name</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Department / Position</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Type</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Base Salary</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Join Date</TableHead>
-                <TableHead className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-6 py-4">Status</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Code</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Full Name</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Department / Position</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Type</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Base Salary</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Join Date</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wide text-slate-500 px-6 py-4">Status</TableHead>
                 <TableHead className="w-[50px] px-6 py-4"></TableHead>
               </TableRow>
             </TableHeader>
@@ -176,7 +193,7 @@ export function EmployeeListPage() {
               {data.data.map((emp) => (
                 <TableRow
                   key={emp.id}
-                  className="cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="cursor-pointer even:bg-slate-50 hover:bg-slate-100 transition-colors border-orange-200"
                   onClick={() => navigate(`/admin/employees/${emp.id}`)}
                 >
                   <TableCell className="px-6 py-4">
@@ -197,25 +214,25 @@ export function EmployeeListPage() {
                   <TableCell className="px-6 py-4 text-sm text-slate-500">{formatDate(emp.join_date)}</TableCell>
                   <TableCell className="px-6 py-4">
                     {emp.status === 'active' && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
                         Active
                       </span>
                     )}
                     {emp.status === 'inactive' && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        <span className="h-1.5 w-1.5 rounded-full bg-orange-600" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                         Inactive
                       </span>
                     )}
                     {emp.status === 'probation' && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
-                        <span className="h-1.5 w-1.5 rounded-full bg-sky-600" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-yellow-600" />
                         Probation
                       </span>
                     )}
                     {emp.status === 'terminated' && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
                         Terminated
                       </span>
@@ -236,22 +253,43 @@ export function EmployeeListPage() {
         )}
 
         {/* Pagination */}
-        <div className="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">Page {page + 1} / {totalPages || 1}</p>
-          <div className="flex items-center gap-2">
+        <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, data?.count ?? 0)} of {data?.count ?? 0} employees
+          </p>
+          <div className="flex items-center gap-1">
             <button
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
-              className="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
             >
-              Previous
+              <ChevronLeft className="h-4 w-4" />
             </button>
+            {generatePaginationPages(page, totalPages).map((p, i) =>
+              p === -1 ? (
+                <span key={`ellipsis-${i}`} className="inline-flex items-center justify-center h-9 w-9 text-sm text-slate-400">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`inline-flex items-center justify-center h-9 min-w-[36px] px-2 rounded-lg text-sm font-medium transition-colors ${
+                    p === page
+                      ? 'bg-orange-500 text-white'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {p + 1}
+                </button>
+              )
+            )}
             <button
               disabled={page >= totalPages - 1}
               onClick={() => setPage(p => p + 1)}
-              className="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
             >
-              Next
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>

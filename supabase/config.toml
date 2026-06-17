@@ -1,0 +1,21 @@
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[functions."bulk-import"]
+verify_jwt = false
+
+[functions."checkin"]
+verify_jwt = false
+
+[functions."generate-qr"]
+verify_jwt = false
+
+[functions."calculate-payroll"]
+verify_jwt = false
+
+[functions."salary-preview"]
+verify_jwt = false
