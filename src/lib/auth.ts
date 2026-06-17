@@ -55,25 +55,41 @@ export async function createUserWithPhone(
   return data.id as string
 }
 
-export async function signUp(name: string, phone: string, password: string): Promise<AuthUser> {
-  const { data: branch } = await supabase
-    .from('branches')
+export async function signUp(params: {
+  fullName: string
+  phone: string
+  password: string
+  branchId: string
+}): Promise<AuthUser> {
+  const { data: existing } = await supabase
+    .from('users')
     .select('id')
-    .limit(1)
-    .single()
+    .eq('phone', params.phone)
+    .maybeSingle()
+  if (existing) throw new Error('Phone number already registered')
 
-  if (!branch) throw new Error('No branch found. Contact admin.')
+  const passwordHash = await hashPassword(params.password)
+  const userId = crypto.randomUUID()
+  const today = new Date().toISOString().split('T')[0]
 
-  const userId = await createUserWithPhone(phone, password, 'employee', branch.id)
+  const { error: userError } = await supabase.from('users').insert({
+    id: userId,
+    phone: params.phone.trim(),
+    password_hash: passwordHash,
+    role: 'employee',
+    branch_id: params.branchId,
+  })
+  if (userError) throw userError
 
   const { error: empError } = await supabase.from('employees').insert({
     user_id: userId,
-    branch_id: branch.id,
-    full_name: name.trim(),
-    phone: phone.trim(),
+    branch_id: params.branchId,
+    full_name: params.fullName.trim(),
     type: 'fulltime',
-    base_salary: 0,
-    status: 'probation',
+    base_salary: 1,
+    allowance: 0,
+    join_date: today,
+    status: 'active',
   })
 
   if (empError) {
@@ -81,7 +97,7 @@ export async function signUp(name: string, phone: string, password: string): Pro
     throw new Error(empError.message)
   }
 
-  return { id: userId, role: 'employee', branch_id: branch.id, phone: phone.trim() }
+  return { id: userId, role: 'employee', branch_id: params.branchId, phone: params.phone.trim() }
 }
 
 export async function changePassword(userId: string, newPassword: string): Promise<void> {

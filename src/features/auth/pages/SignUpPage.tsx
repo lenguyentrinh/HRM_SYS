@@ -4,15 +4,25 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Loader2, Phone, Lock, User, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Phone, Lock, User, UserPlus, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { signUp } from '@/lib/auth'
+import { useAuthStore } from '@/stores/authStore'
+import { useBranches } from '@/features/branches/hooks/useBranches'
 
 const signUpSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    fullName: z.string().min(2, 'Name must be at least 2 characters'),
     phone: z.string().min(10, 'Invalid phone number').max(11),
+    branchId: z.string().min(1, 'Please select a branch'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
   })
@@ -25,20 +35,32 @@ type SignUpForm = z.infer<typeof signUpSchema>
 
 export function SignUpPage() {
   const navigate = useNavigate()
+  const setUser = useAuthStore((s) => s.setUser)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const { data: branches, isLoading: branchesLoading } = useBranches()
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SignUpForm>({ resolver: zodResolver(signUpSchema) })
 
+  const selectedBranch = watch('branchId')
+
   const onSubmit = async (values: SignUpForm) => {
     try {
-      await signUp(values.name, values.phone, values.password)
-      toast.success('Account created successfully. Please sign in.')
-      navigate('/login', { replace: true })
+      const user = await signUp({
+        fullName: values.fullName,
+        phone: values.phone,
+        password: values.password,
+        branchId: values.branchId,
+      })
+      setUser(user)
+      toast.success('Account created successfully')
+      navigate(user.role === 'employee' ? '/' : '/admin', { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account')
     }
@@ -68,18 +90,18 @@ export function SignUpPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-semibold tracking-wider text-slate-900">Full Name</label>
+              <label htmlFor="fullName" className="block text-sm font-semibold tracking-wider text-slate-900">Full Name</label>
               <div className="relative group">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary pointer-events-none transition-colors" />
                 <Input
-                  id="name"
+                  id="fullName"
                   type="text"
                   placeholder="Nguyen Van A"
                   className="pl-10 py-3 bg-slate-50 border-[#e0c0b1] rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register('name')}
+                  {...register('fullName')}
                 />
               </div>
-              {errors.name && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.name.message}</p>}
+              {errors.fullName && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.fullName.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -95,6 +117,29 @@ export function SignUpPage() {
                 />
               </div>
               {errors.phone && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.phone.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold tracking-wider text-slate-900">Branch</label>
+              <div className="relative group">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary pointer-events-none transition-colors z-10" />
+                <Select
+                  value={selectedBranch}
+                  onValueChange={(val) => setValue('branchId', val, { shouldValidate: true })}
+                >
+                  <SelectTrigger className="pl-10 py-3 bg-slate-50 border-[#e0c0b1] rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 h-12">
+                    <SelectValue placeholder={branchesLoading ? 'Loading...' : 'Select your branch'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches?.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {errors.branchId && <p className="text-xs text-destructive flex items-center gap-1 mt-1">{errors.branchId.message}</p>}
             </div>
 
             <div className="space-y-2">
