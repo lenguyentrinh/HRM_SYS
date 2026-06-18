@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, CalendarDays, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CalendarDays, Users, Copy, Trash2 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TableSkeleton } from '@/components/shared/LoadingSkeleton'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { useRosterEmployees, useRosterShifts, useShiftAssignments, useShiftSchedules, useScheduleOverride } from '../hooks/useRoster'
+import { useRosterEmployees, useRosterShifts, useShiftAssignments, useShiftSchedules, useScheduleOverride, useCopyRosterFromPreviousMonth, useClearEmployeeRoster } from '../hooks/useRoster'
 import { formatDate } from '@/lib/utils'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -33,6 +34,8 @@ export function RosterPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedShiftId, setSelectedShiftId] = useState('')
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('')
+  const [showCopyDialog, setShowCopyDialog] = useState(false)
+  const [clearEmpId, setClearEmpId] = useState<string | null>(null)
 
   const { data: employees, isLoading: empLoading } = useRosterEmployees()
   const { data: shifts, isLoading: shiftLoading } = useRosterShifts()
@@ -44,6 +47,8 @@ export function RosterPage() {
 
   const { data: schedules, isLoading: schedLoading } = useShiftSchedules(dateFrom, dateTo)
   const scheduleOverride = useScheduleOverride()
+  const copyFromPrev = useCopyRosterFromPreviousMonth()
+  const clearRoster = useClearEmployeeRoster()
 
   const firstDayOffset = new Date(currentYear, currentMonth - 1, 1).getDay()
 
@@ -77,6 +82,11 @@ export function RosterPage() {
     })
     return map
   }, [schedules])
+
+  const getCurrentOverride = () => {
+    if (!selectedDate || !selectedEmployeeId) return null
+    return scheduleMap.get(`${selectedEmployeeId}_${selectedDate}`)
+  }
 
   const days = useMemo(() => {
     const result: Array<{
@@ -128,9 +138,9 @@ export function RosterPage() {
   }
 
   const handleSaveOverride = () => {
-    if (!selectedDate || !selectedEmployeeId || !selectedShiftId) return
+    if (!selectedDate || !selectedEmployeeId) return
     scheduleOverride.mutate(
-      { employee_id: selectedEmployeeId, shift_id: selectedShiftId, date: selectedDate },
+      { employee_id: selectedEmployeeId, shift_id: selectedShiftId || null, date: selectedDate },
       { onSuccess: () => { setSelectedDate(null); setSelectedEmployeeId(''); setSelectedShiftId('') } },
     )
   }
@@ -142,6 +152,18 @@ export function RosterPage() {
       <PageHeader
         title="Roster Scheduling"
         description={`${MONTH_NAMES[currentMonth - 1]} ${currentYear}`}
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            onClick={() => setShowCopyDialog(true)}
+            disabled={copyFromPrev.isPending}
+          >
+            <Copy className="h-4 w-4" />
+            Copy from Previous Month
+          </Button>
+        }
       />
 
       {/* Month Navigator + Summary */}
@@ -285,6 +307,28 @@ export function RosterPage() {
         </div>
       )}
 
+      {/* Employee Roster Actions */}
+      <div className="mt-6 bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+        <h3 className="text-sm font-semibold text-slate-900 mb-3">Employee Roster Actions</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {(employees ?? []).map((emp) => (
+            <div
+              key={emp.id}
+              className="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200"
+            >
+              <span className="text-sm font-medium text-slate-700 truncate">{emp.full_name}</span>
+              <button
+                onClick={() => setClearEmpId(emp.id)}
+                className="flex-shrink-0 p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                title="Clear roster for this month"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Assignment Dialog */}
       <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) setSelectedDate(null) }}>
         <DialogContent className="max-w-sm">
@@ -322,10 +366,27 @@ export function RosterPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSelectedDate(null)}>
-                Cancel
-              </Button>
+            <div className="flex justify-between gap-3 pt-2">
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setSelectedDate(null)}>
+                  Cancel
+                </Button>
+                {getCurrentOverride()?.shift_id && (
+                  <Button
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => {
+                      scheduleOverride.mutate(
+                        { employee_id: selectedEmployeeId, shift_id: null, date: selectedDate! },
+                        { onSuccess: () => { setSelectedDate(null); setSelectedEmployeeId(''); setSelectedShiftId('') } },
+                      )
+                    }}
+                    disabled={scheduleOverride.isPending}
+                  >
+                    Remove Override
+                  </Button>
+                )}
+              </div>
               <Button
                 onClick={handleSaveOverride}
                 disabled={!selectedEmployeeId || !selectedShiftId || scheduleOverride.isPending}
@@ -337,6 +398,34 @@ export function RosterPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Copy Roster Dialog */}
+      <ConfirmDialog
+        open={showCopyDialog}
+        onOpenChange={setShowCopyDialog}
+        title="Copy roster from previous month?"
+        description={`Will copy all schedule overrides from ${MONTH_NAMES[(currentMonth === 1 ? 12 : currentMonth - 1) - 1]} to ${MONTH_NAMES[currentMonth - 1]}. Current schedules will not be deleted.`}
+        confirmLabel="Copy"
+        onConfirm={() => copyFromPrev.mutate({ month: currentMonth, year: currentYear }, { onSuccess: () => setShowCopyDialog(false) })}
+        isLoading={copyFromPrev.isPending}
+      />
+
+      {/* Clear Employee Roster Dialog */}
+      <ConfirmDialog
+        open={!!clearEmpId}
+        onOpenChange={(o) => { if (!o) setClearEmpId(null) }}
+        title="Clear employee roster?"
+        description={`Will delete all schedule overrides for ${employees?.find((e) => e.id === clearEmpId)?.full_name} in ${MONTH_NAMES[currentMonth - 1]}. Default assignments will remain.`}
+        confirmLabel="Clear"
+        onConfirm={() => {
+          if (!clearEmpId) return
+          clearRoster.mutate(
+            { employeeId: clearEmpId, month: currentMonth, year: currentYear },
+            { onSuccess: () => setClearEmpId(null) },
+          )
+        }}
+        isLoading={clearRoster.isPending}
+      />
     </div>
   )
 }
